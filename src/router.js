@@ -1,12 +1,10 @@
-import Vue from 'vue'
-import Router from 'vue-router'
-import Dashboard from './views/Dashboard.vue'
-import SignMaker from './views/SignMaker.vue'
-import NewSign from './views/NewSign.vue'
-import PrintQueue from './views/PrintQueue.vue'
-
+import Vue from 'vue';
+import Router from 'vue-router';
+import Dashboard from './views/Dashboard.vue';
+import SignMaker from './views/SignMaker.vue';
+import NewSign from './views/NewSign.vue';
+import PrintQueue from './views/PrintQueue.vue';
 Vue.use(Router);
-
 export default new Router({
     routes: [
         {
@@ -63,4 +61,5 @@ export default new Router({
             component: () => import('./views/PageNotFound.vue')
         }
     ]
-})
+});
+//# sourceMappingURL=router.js.map
