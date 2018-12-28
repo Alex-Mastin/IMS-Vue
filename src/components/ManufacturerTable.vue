@@ -55,10 +55,10 @@
         },
         methods: {
             addLine() {
-                let emptyLines = this.lines.filter(line => line.model === null);
+                let emptyLines = this.lines.filter(line => line.manufacturer === null);
 
                 if (emptyLines.length >= 1 && this.lines.length > 0) {
-                    return
+                    return;
                 }
 
                 this.lines.unshift({
