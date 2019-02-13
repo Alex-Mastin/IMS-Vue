@@ -14,11 +14,14 @@
             </div>
             <div class="dashboard-section">
                 <div class="dashboard-row" style="display: flex;">
-                    <div class="dashboard-row-item half">
+                    <div class="dashboard-row-item third">
                         <manufacturer-table ref="table"></manufacturer-table>
                     </div>
-                    <div class="dashboard-row-item half">
+                    <div class="dashboard-row-item third">
                         <product-table ref="table"></product-table>
+                    </div>
+                    <div class="dashboard-row-item third">
+                        <carrier-table ref="table"></carrier-table>
                     </div>
                 </div>
             </div>
@@ -33,7 +36,8 @@
     import DashboardInventory from "@/components/DashboardInventory.vue";
     import MSRPTable from '@/components/MSRPTable.vue'
     import ManufacturerTable from "@/components/ManufacturerTable.vue";
-    import ProductTable from "../components/ProductTable.vue";
+    import ProductTable from "@/components/ProductTable.vue";
+    import CarrierTable from "@/components/CarrierTable.vue";
 
     @Component({
         components: {
@@ -42,7 +46,8 @@
             DashboardInventory,
             Nav,
             DashboardActivity,
-            MSRPTable
+            MSRPTable,
+            CarrierTable
         },
         methods: {
 
@@ -59,10 +64,19 @@
 
 <style>
 
+    @media  screen and (max-width: 1600px) {
+        .dashboard-section {
+            width: 120%!important;
+        }
+    }
+
     #dashboard-content {
         width: 72.925%;
         position: absolute;
         top: 3.1rem;
+        min-width: 72.925%;
+        white-space: nowrap;
+        margin-bottom: 30px;
     }
 
     .dashboard-section {
@@ -123,5 +137,9 @@
 
     .half {
         width: 50%!important;
+    }
+
+    .third {
+        width: 33%!important;
     }
 </style>

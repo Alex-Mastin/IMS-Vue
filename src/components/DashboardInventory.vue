@@ -2,8 +2,8 @@
     <div id="inventory">
         <label class="bottom-space font-lg font-light">Inventory Summary</label>
         <div>
-            <inventory-panel label="New Store Stock" v-on:click.native="getNewStoreStock"></inventory-panel>
-            <inventory-panel label="Ready for Floor" v-on:click.native="getReadyForFloor"></inventory-panel>
+            <inventory-panel label="New Store Stock" content="new" v-on:click.native="routeTo('/advanced-search/storestock/?deq=' + getFullDate())"></inventory-panel>
+            <inventory-panel label="Ready for Floor" content="ready" v-on:click.native="routeTo('/advanced-search/storestock/?ready')"></inventory-panel>
         </div>
     </div>
 </template>
@@ -17,12 +17,17 @@
             InventoryPanel
         },
         methods: {
-            getNewStoreStock() {
-                alert("This function has not been implemented yet");
+            routeTo(route) {
+                this.$router.push(route);
             },
-            getReadyForFloor() {
-                alert("This function has not been implemented yet");
-            }
+            getFullDate() {
+                let date = new Date();
+                let month = date.getMonth() + 1;
+                let day = date.getDate();
+                let year = date.getFullYear();
+
+                return month + "-" + day + "-" + year;
+            },
         }
     }
 </script>

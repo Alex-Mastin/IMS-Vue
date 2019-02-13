@@ -1,6 +1,6 @@
 {
-  "name": "IMS-Vue",
-  "short_name": "IMS-Vue",
+  "name": "IMS | Device Pitstop",
+  "short_name": "IMS",
   "icons": [
     {
       "src": "./img/icons/android-chrome-192x192.png",

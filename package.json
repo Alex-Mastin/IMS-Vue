@@ -14,8 +14,10 @@
     "register-service-worker": "^1.5.2",
     "vue": "^2.5.17",
     "vue-class-component": "^6.0.0",
+    "vue-date-pick": "^1.0.5",
     "vue-property-decorator": "^7.0.0",
     "vue-router": "^3.0.1",
+    "vue-vanilla-datetime-picker": "^1.0.28",
     "vuex": "^3.0.1"
   },
   "devDependencies": {

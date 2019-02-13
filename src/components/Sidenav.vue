@@ -4,7 +4,7 @@
             <tab-item title="Dashboard" icon="dashboard" :active="this.getRoute('Dashboard')" v-on:click.native="toDashboard(false)" @click.middle.native="toDashboard(true)"></tab-item>
             <navigation-divider></navigation-divider>
             <tab-item title="Store Stock" icon="storestock" :active="this.getRoute('Store Stock')" v-on:click.native="toStoreStock(false)" @click.middle.native="toStoreStock(true)"></tab-item>
-            <tab-item title="Big Buys/Sales" icon="buysale" :active="this.getRoute('Big Buys/Sales')" v-on:click.native="toBuySale(false)" @click.middle.native="toBuySale(true)"></tab-item>
+            <tab-item title="Big Buys/Sales" icon="buysale" :active="this.getRoute('Buy/Sale')" v-on:click.native="toBuySale(false)" @click.middle.native="toBuySale(true)"></tab-item>
             <tab-item title="Returns" icon="returns" :active="this.getRoute('Returns')" v-on:click.native="toReturns(false)" @click.middle.native="toReturns(true)"></tab-item>
             <navigation-divider></navigation-divider>
             <tab-item title="Sign Maker" icon="signmaker" :active="isSignMaker()" v-on:click.native="toSignMaker(false)" @click.middle.native="toSignMaker(true)"></tab-item>
@@ -25,7 +25,9 @@
         },
         methods: {
             getRoute(val) {
-                return this.$route.name === val;
+                if (this.$route.name) {
+                    return this.$route.name.includes(val);
+                }
             },
             toDashboard(newTab) {
                 if (!newTab) {
@@ -107,7 +109,7 @@
                 }
             },
             isSignMaker() {
-                return this.$route.name === 'Sign Maker' || this.$route.name === 'New Sign' || this.$route.name === 'Print Queue';
+                return this.$route.name === 'Sign Maker' || this.$route.name === 'New Sign' || this.$route.name === 'Print Queue' || this.$route.name === 'Print Queue History';
             }
         }
     }
@@ -138,5 +140,11 @@
         list-style: none;
     }
 
+    .bottom {
+        position: absolute;
+        bottom: 50px;
+        width: 200px;
+
+    }
 
 </style>

@@ -1,5 +1,7 @@
 <template>
     <div id="new-sign" v-title="title">
+        <confirm-dialog></confirm-dialog>
+        <modal></modal>
         <div class="column form-column">
             <div class="column-header header-btm-border">
                 <div class="action-row">
@@ -49,7 +51,7 @@
                 </div>
             </div>
             <div class="btn-toolbar-center">
-                <btn-33 primary content="Add to Queue" @click.native="addToQueue"></btn-33>
+                <btn-33 primary content="Add to Queue" @click.native="checkQueue"></btn-33>
                 <btn-33 content="Go to Queue" @click.native="toQueue()"></btn-33>
             </div>
 
@@ -63,6 +65,8 @@
     import FormInput from '@/components/FormInput.vue'
     import Autocomplete from '@/components/Autocomplete.vue'
     import Sign from '@/components/Sign.vue'
+    import Modal from '@/components/Modal.vue'
+    import ConfirmDialog from '@/components/ConfirmDialog.vue'
     import database from '@/components/firebaseInit.js'
 
     export default {
@@ -72,7 +76,9 @@
             ReturnBtn,
             FormInput,
             Autocomplete,
-            Sign
+            Sign,
+            Modal,
+            ConfirmDialog
         },
         data() {
             return {
@@ -113,16 +119,40 @@
 
                     form.reset();
                 }
-
-
+            },
+            checkQueue() {
+                let self = this;
+                database.collection('signs').get()
+                    .then(snapshot => {
+                        if (snapshot.size < 10) {
+                            this.addToQueue();
+                        }
+                        else {
+                            self.$root.$emit('openConfirm', {
+                                closed: false,
+                                text: 'The print queue is full! Print some signs first.',
+                                type: 'warning',
+                                dimScreen: true,
+                            });
+                        }
+                    });
             },
             addToQueue() {
-                let signProduct = document.querySelector("#sign-product");
+                let self = this;
 
-                let signCarrier = document.querySelector("#sign-carrier");
+                let signValues = document.querySelector(".card") // .card
+                                .children[0] // sign-#############
+                                .children[0] // sign
+                                .children[0] // div
+                                .children[0] // table
+                                .children[0] // tbody
+                                .children; // tr collection
+
+                let signProduct = document.querySelector("#sign-product");
+                let signCarrier = signValues[3].children[0].children[0]; // This is necessary because you have no idea what the ID will be since it's dynamic.
                 let signCapacity = document.querySelector("#sign-capacity");
                 let signPrice = document.querySelector("#sign-price");
-                let signComments = document.querySelector("#sign-comment");
+                let signComments = signValues[4].children[0].children[0]; // This is necessary because you have no idea what the ID will be since it's dynamic.
                 let signMsrp = document.querySelector("#sign-msrp");
                 let signSku = document.querySelector("#sign-sku");
 
@@ -167,9 +197,21 @@
                         msrp: msrp || ''
                     }).then(function(docRef) {
                         console.log("Document written with ID: ", docRef.id);
+
+                        self.$root.$emit('openModal', {
+                            closed: false,
+                            text: 'The sign was successfully added to the queue!',
+                            type: 'success'
+                        });
                     })
                         .catch(function(error) {
                             console.error("Error adding document: ", error);
+
+                            self.$root.$emit('openModal', {
+                                closed: false,
+                                text: 'An error occurred while adding the sign to the queue!',
+                                type: 'error'
+                            });
                         });
 
 
@@ -182,8 +224,6 @@
                     this.sku = '';
                     this.msrp = '';
                 }
-
-
             },
         },
         created() {
@@ -218,7 +258,11 @@
                         this.capacities.push(capacity);
                     })
                 });
-
+        },
+        mounted() {
+            this.$root.$on('confirm', data => {
+                this.toQueue();
+            });
         }
     }
 </script>

@@ -15,17 +15,41 @@
             <table id="msrp-table">
                 <thead>
                     <tr v-if="lines.length > 0" class="uppercase font-s">
-                        <th class="width-15">Manufacturer</th>
-                        <th class="width-20">Model</th>
-                        <th class="width-10">Capacity</th>
-                        <th class="width-15">MSRP</th>
+                        <th class="width-15" @click="sort('manufacturer')">
+                            <div class="left overflow">
+                                Manufacturer
+                            </div>
+                            <span v-if="currentSort === 'manufacturer'" class="caret right up" :class="{ 'currentSortDirection': sortDirection === 'asc' }"></span>
+                            <span v-if="currentSort === 'manufacturer'" class="caret right down" :class="{ 'currentSortDirection': sortDirection === 'desc' }"></span>
+                        </th>
+                        <th class="width-20" @click="sort('model')">
+                            <div class="left overflow">
+                                Model
+                            </div>
+                            <span v-if="currentSort === 'model'" class="caret right up" :class="{ 'currentSortDirection': sortDirection === 'asc' }"></span>
+                            <span v-if="currentSort === 'model'" class="caret right down" :class="{ 'currentSortDirection': sortDirection === 'desc' }"></span>
+                        </th>
+                        <th class="width-10" @click="sort('capacity')">
+                            <div class="left overflow">
+                                Capacity
+                            </div>
+                            <span v-if="currentSort === 'capacity'" class="caret right up" :class="{ 'currentSortDirection': sortDirection === 'asc' }"></span>
+                            <span v-if="currentSort === 'capacity'" class="caret right down" :class="{ 'currentSortDirection': sortDirection === 'desc' }"></span>
+                        </th>
+                        <th class="width-15" @click="sort('msrp')">
+                            <div class="left overflow">
+                                MSRP
+                            </div>
+                            <span v-if="currentSort === 'msrp'" class="caret right up" :class="{ 'currentSortDirection': sortDirection === 'asc' }"></span>
+                            <span v-if="currentSort === 'msrp'" class="caret right down" :class="{ 'currentSortDirection': sortDirection === 'desc' }"></span>
+                        </th>
                     </tr>
                     <tr class="noRecords" v-if="lines.length === 0">
                         <td class="text-muted text-center" colspan="4">No Records Found</td>
                     </tr>
                 </thead>
                 <tbody id="table">
-                    <tr v-for="(line, index) in lines" :key="index">
+                    <tr v-for="(line, index) in sortedLines" :key="index">
                         <td style="width: 15%">
                             <input type="text" v-if="line.edit === true" v-model="lines[index].manufacturer" @input="line.changed = true">
                             <span v-else>{{ line.manufacturer }}</span>
@@ -46,11 +70,8 @@
                             </button>
 
                             <button v-if="line.edit === true" class="action-btn right" @click="valid(line.manufacturer, line.model, line.capacity, line.msrp, line.changed) ? (line.edit = false, line.changed = false) : line.edit = true">
-                                                                    <!--(valid(manufacturer, model, capacity, msrp) ? (line.edit = false) : line.edit = true) :-->
-                                                                    <!--(valid(line.manufacturer, line.model, line.capacity, line.msrp) ? line.edit = false : line.edit = true)">-->
                                 <svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' version='1.1' id='Capa_1' x='0px' y='0px' viewBox='0 0 488.878 488.878' xml:space='preserve'> <g> <g> <polygon points='143.294,340.058 50.837,247.602 0,298.439 122.009,420.447 122.149,420.306 144.423,442.58 488.878,98.123 437.055,46.298 '></polygon></g></g></svg>
                             </button>
-
                         </td>
                         </tr>
                 </tbody>
@@ -66,7 +87,9 @@
         name: "msrp-table",
         data() {
             return {
-                lines: []
+                lines: [],
+                currentSort: 'model',
+                sortDirection: 'asc',
             }
         },
         methods: {
@@ -188,10 +211,36 @@
             },
             replaceAll(string, find, replace) {
                 return string.replace(new RegExp(find, 'g'), replace);
+            },
+            sort(sortKey) {
+                if (sortKey === this.currentSort) {
+                    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+                }
+                this.currentSort = sortKey;
+            },
+        },
+        computed: {
+            sortedLines() {
+                return this.lines.sort((a, b) => {
+                    let modifier = 1;
+                    if (this.sortDirection === 'desc') modifier = -1;
+
+                    if (this.currentSort === 'msrp' || this.currentSort === 'capacity') {
+                        if (Number(a[this.currentSort]) < Number(b[this.currentSort])) return -1 * modifier;
+                        if (Number(a[this.currentSort]) > Number(b[this.currentSort])) return 1 * modifier;
+                    }
+
+                    else {
+                        if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
+                        if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
+                    }
+
+                    return 0;
+                });
             }
         },
         created() {
-            database.collection('msrp').orderBy('model').get()
+            database.collection('msrp').orderBy('capacity', 'desc').get()
                 .then(snapshot => {
                     snapshot.forEach(doc => {
                         let line = doc.data();
@@ -199,18 +248,6 @@
                         this.lines.push(line);
                     })
                 });
-        },
-        beforeMount() {
-            // console.log("Before mount");
-        },
-        mounted() {
-            // console.log("Mounted");
-        },
-        beforeUpdate() {
-            // console.log("Before update");
-        },
-        updated() {
-            // console.log("Updated");
         }
     }
 </script>
@@ -243,7 +280,8 @@
     thead {
         background: #f7f7f7;
         flex: 0 0 auto;
-        width: 100%
+        width: 100%;
+        user-select: none;
     }
 
     thead, tr {
@@ -279,6 +317,37 @@
     [contenteditable=true]:empty:not(:focus):before {
         color: #777 !important;
         content:attr(data-text);
+    }
+
+    .caret.up {
+        display: inline-block;
+        position: relative;
+        width: 0;
+        height: 0;
+        top: -2px;
+        left: -8px;
+        vertical-align: middle;
+        border: 4px solid #333;
+        border-right: 4px solid transparent;
+        border-left: 4px solid transparent;
+        border-top: 4px solid transparent;
+    }
+
+    .caret.down {
+        display: inline-block;
+        position: relative;
+        width: 0;
+        height: 0;
+        top: 8px;
+        vertical-align: middle;
+        border: 4px solid #333;
+        border-right: 4px solid transparent;
+        border-left: 4px solid transparent;
+        border-bottom: 4px solid transparent;
+    }
+
+    .caret:not(.currentSortDirection) {
+        opacity: 0.3;
     }
 
 </style>

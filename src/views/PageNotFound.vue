@@ -4,8 +4,8 @@
             <div class="text-center">
                 <h1>404 Error</h1>
                 <h3 class="text-grey">Whoops! Looks like this page doesn't exist.</h3>
-                <btn content="To Dashboard" @click.native="toDashboard(false)" @click.middle="toDashboard(true)" primary></btn>
-                <btn content="Go Back" @click.native="goBack" style="margin-left: 0.75rem"></btn>
+                <btn large content="To Dashboard" @click.native="toDashboard(false)" @click.middle="toDashboard(true)" primary></btn>
+                <btn large content="Go Back" @click.native="goBack" style="margin-left: 0.75rem"></btn>
             </div>
         </div>
     </body>

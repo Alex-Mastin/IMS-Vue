@@ -1,8 +1,63 @@
 <template>
     <div class="form-group">
-        <label :class="labelClass()">{{ label }}</label>
-        <div :class="divClass()">
-            <input :id="elementId" :type="type" :step="step" class="form-control" style="width: 365px" :required="required" autocomplete="off" :placeholder="placeholder">
+        <label :class="{ 'required': required, 'label-15': labelWidth === 15 }">{{ label }}</label>
+        <div class="right" :class="divClass()">
+            <select
+                    v-if="select === true"
+                    :id="elementId"
+                    :type="type"
+                    :step="step"
+                    class="form-control"
+                    :class="{ 'large': small === false, 'small': small === true }"
+                    autocomplete="off"
+                    :placeholder="placeholder"
+                    v-model="selected"
+                    @change="parseOption(selected)"
+            >
+                <option value="" disabled="" selected="" hidden="">Select an option...</option>
+                <option v-for="option in options">{{ option }}</option>
+            </select>
+            <input
+                    v-if="textarea === false && select === false"
+                    :id="elementId"
+                    :type="type"
+                    :step="step"
+                    class="form-control"
+                    :class="{ 'large': small === false, 'small': small === true }"
+                    :required="required"
+                    autocomplete="off"
+                    :placeholder="placeholder"
+                    v-model="inputOne"
+                    :disabled="disabled"
+            >
+            <input
+                    v-if="textarea === false && double === true"
+                    :id="elementId + 'Two'"
+                    :type="type"
+                    :step="step"
+                    class="form-control double"
+                    :class="{ 'large': small === false, 'small': small === true }"
+                    :style="small === true ? 'width: 154px' : ''"
+                    :required="required"
+                    autocomplete="off"
+                    :placeholder="placeholderTwo"
+                    v-model="inputTwo"
+                    :disabled="disabled"
+            >
+            <textarea
+                    v-if="textarea === true"
+                    :id="elementId"
+                    :type="type"
+                    :step="step"
+                    class="form-control double"
+                    :class="{ 'large': small === false, 'small': small === true, 'tall': tall === true }"
+                    :required="required"
+                    autocomplete="off"
+                    :placeholder="placeholder"
+                    rows="1"
+                    v-model="textArea"
+                    :disabled="disabled"
+            ></textarea>
         </div>
     </div>
 </template>
@@ -16,6 +71,7 @@
             label: String,
             required: Boolean,
             placeholder: String,
+            placeholderTwo: String,
             elementId: String,
             type: {
                 type: String,
@@ -26,30 +82,56 @@
                 type: Number,
                 required: false,
                 default: 1
+            },
+            small: {
+                type: Boolean,
+                required: false,
+                default: false
+            },
+            tall: {
+                type: Boolean,
+                required: false,
+                default: false
+            },
+            double: {
+                type: Boolean,
+                required: false,
+                default: false
+            },
+            textarea: {
+                type: Boolean,
+                required: false,
+                default: false
+            },
+            select: {
+                type: Boolean,
+                required: false,
+                default: false
+            },
+            options: Array,
+            disabled: Boolean
+        },
+        data() {
+            return {
+                inputOne: '',
+                inputTwo: '',
+                selected: '',
+                textArea: '',
             }
         },
         methods: {
-            labelClass() {
-                let elementClass = "";
-
-                if (this.required) {
-                    elementClass += 'required';
-                }
-
-                if (this.labelWidth === "15") {
-                    elementClass += ' input-15'
-                }
-
-                return elementClass;
-            },
             divClass() {
-                let elementClass = "right";
-
-                if (this.inputWidth === "50") {
-                    elementClass += ' input-50';
+                return 'input-' + this.inputWidth;
+            },
+            parseOption(val) {
+                // If input does not contain val, and is just an empty string, make input equal to val.
+                if (!this.inputTwo.includes(val)) if (!this.inputTwo) {
+                    this.inputTwo = val;
                 }
-
-                return elementClass;
+                // Else concatenate val to input value
+                else {
+                    this.inputTwo += ", " + val
+                }
             }
         }
     }
@@ -60,12 +142,27 @@
         display: table;
         margin-bottom: 15px;
         width: 60.45%;
+        white-space: nowrap;
     }
 
     label {
         display: inline-block;
         padding-right: 15px;
         margin-top: 6px;
+        margin-left: 15px;
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 21px!important;
+    }
+
+    textarea.tall {
+        min-height: 100px!important;
+    }
+
+    select {
+        height: 33px;
     }
 
     .required {
@@ -80,7 +177,6 @@
         font-size: 15px;
         line-height: 1.42857143;
         color: #555;
-        /*display: block;*/
         padding: 5px 12px;
         background-color: #fff;
         background-image: none;
@@ -100,4 +196,31 @@
     input[type=number]::-webkit-outer-spin-button {
         margin: 3px 0;
     }
+
+    .input-25 {
+        width: 64.75%;
+    }
+
+    .double {
+        margin-left: 32px;
+    }
+
+    .large {
+        width: 365px;
+    }
+
+    input.small {
+        width: 153px;
+    }
+
+    select.small {
+        width: 179px;
+    }
+
+    :disabled {
+        background-color: #f9f9f9!important;
+        color: #999!important;
+        cursor: not-allowed;
+    }
+
 </style>

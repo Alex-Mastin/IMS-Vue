@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <navigation v-if="this.pageKnown() && this.notPrintQueue()"></navigation>
+    <navigation v-if="this.showNavigation()"></navigation>
     <router-view/>
   </div>
 </template>
@@ -18,11 +18,8 @@
             }
         },
         methods: {
-            pageKnown() {
-                return this.$route.name !== "Page Not Found"
-            },
-            notPrintQueue() {
-                return this.$route.name !== "Print Queue"
+            showNavigation() {
+              return this.$route.name !== "Print Queue" && this.$route.name !== "Page Not Found"
             }
         }
     }
@@ -64,6 +61,59 @@
         font-family: 'Metropolis Black';
         src: url(./assets/fonts/Metropolis-Black.ttf)
     }
+
+    /* ===== MEDIA QUERIES =====
+     * https://gist.github.com/Mikodes/be9b9ce42e46c3d4ccb6
+     */
+    @media  screen and (max-width: 1600px) {
+      /* Dashboard */
+      #dashboard .dashboard-section {
+        width: 120%!important;
+      }
+
+      /* Store Stock / Returns Tracker */
+      #storestock #column, #returns #column {
+        width: 95%!important;
+      }
+
+      /* Sign Maker */
+      #new-sign .form-column {
+        width: 50.5%;
+      }
+
+      /* Sign Maker */
+      #new-sign .preview {
+        width: 40%;
+      }
+    }
+
+    @media  screen and (max-width: 1920px) {
+      /* Dashboard */
+      #dashboard .dashboard-section {
+        width: 100%!important;
+      }
+
+      /* Store Stock / Returns Tracker */
+      #storestock #column {
+        width: 98%!important;
+      }
+
+      #returns #column {
+        width: 97.25%!important;
+      }
+
+      /* Sign Maker */
+      #new-sign .form-column {
+        width: 60.5%;
+      }
+
+      /* Sign Maker */
+      #new-sign .preview {
+        width: 35%;
+      }
+    }
+
+
 
     html, body {
         height: 100%;
@@ -193,6 +243,10 @@
       color: #f4a204;
     }
 
+    .width-5 {
+      width: 5%;
+    }
+
     .width-10 {
       width: 10%;
     }
@@ -268,6 +322,13 @@
       padding: 10px 24px;
     }
 
+    .btn-small {
+      padding: 5px 10px;
+      font-size: 13px;
+      line-height: 1.5;
+      border-radius: 3px;
+    }
+
     .btn-primary {
       color: #fff;
       background-color: #2FA3E6;
@@ -296,6 +357,10 @@
       height: 33px;
     }
 
+    .no-select {
+      user-select: none;
+    }
+
     .no-results {
       text-align: center;
       border-color: white;
@@ -314,6 +379,8 @@
     ::-webkit-scrollbar {
       width: 8px;
       height: 8px;
+      position: absolute;
+      right: 10px;
     }
 
     ::-webkit-scrollbar-thumb {
@@ -329,4 +396,10 @@
       font-weight: normal;
       line-height: 1.1;
     }
+
+    .dropdown {
+      max-width: inherit!important;
+    }
+
+
 </style>

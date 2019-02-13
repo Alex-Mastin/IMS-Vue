@@ -1,15 +1,51 @@
 <template>
     <div class="inventory-panel">
         <label class="font-regular font-sm uppercase text-void">{{ label }}</label>
-        <label class="font-xl text-normal right inv-container"><span class="font-regular">0</span></label>
+        <label class="font-xl text-normal right inv-container">
+            <span class="font-regular">{{ quantity }}</span>
+        </label>
     </div>
 </template>
 
 <script>
+    import database from '@/components/firebaseInit.js'
+
     export default {
         name: "inventory-panel",
         props: {
-            label: String
+            label: String,
+            content: {
+                type: String,
+                required: true
+            }
+        },
+        data() {
+            return {
+                quantity: 0
+            }
+        },
+        methods: {
+            getFullDate() {
+                let date = new Date();
+                let month = date.getMonth() + 1;
+                let day = date.getDate();
+                let year = date.getFullYear();
+
+                return month + "/" + day + "/" + year;
+            },
+        },
+        created() {
+            if (this.content === 'new') {
+                database.collection('devices').where("date", "==", this.getFullDate()).onSnapshot(snapshot => {
+                    this.quantity = snapshot.size;
+                });
+            }
+
+            else if (this.content === 'ready') {
+                database.collection('devices').where("ready", "==", true).onSnapshot(snapshot => {
+                    this.quantity = snapshot.size;
+                });
+            }
         }
     }
 </script>

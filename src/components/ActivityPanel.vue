@@ -2,7 +2,7 @@
     <div class="activity-panel text-center">
         <div class="panel">
             <p :class="panelClass">
-                <span>0</span>
+                <span>{{ quantity }}</span>
             </p>
             <div class="qty">
                 <span class="font-xs">Qty</span>
@@ -15,15 +15,57 @@
 </template>
 
 <script>
+    import database from '@/components/firebaseInit.js'
+
     export default {
         name: "activity-panel",
         props: {
             color: String,
-            label: String
+            label: String,
+            content: {
+                type: String,
+                required: true
+            }
         },
         data() {
             return {
-                panelClass: "legend overflow font-light " + this.color
+                panelClass: "legend overflow font-light " + this.color,
+                quantity: 0
+            }
+        },
+        methods: {
+            getFullDate() {
+                let date = new Date();
+                let month = date.getMonth() + 1;
+                let day = date.getDate();
+                let year = date.getFullYear();
+
+                return month + "/" + day + "/" + year;
+            },
+        },
+        created() {
+            if (this.content === 'buys') {
+                database.collection('buysale').where("date", "==", this.getFullDate()).where("buy", "==", true).onSnapshot(snapshot => {
+                    this.quantity = snapshot.size;
+                });
+            }
+
+            else if (this.content === 'sales') {
+                database.collection('buysale').where("date", "==", this.getFullDate()).where("sale", "==", true).onSnapshot(snapshot => {
+                    this.quantity = snapshot.size;
+                });
+            }
+
+            else if (this.content === 'returns') {
+                database.collection('returns').where("date", "==", this.getFullDate()).onSnapshot(snapshot => {
+                    this.quantity = snapshot.size;
+                });
+            }
+
+            else if (this.content === 'signs') {
+                database.collection('signs').onSnapshot(snapshot => {
+                    this.quantity = snapshot.size;
+                });
             }
         }
     }

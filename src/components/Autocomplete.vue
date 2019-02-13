@@ -17,7 +17,7 @@
                    @keydown.tab="onTab"
             >
         </div>
-        <ul v-show="isOpen" id="results" class="autocomplete-results">
+        <ul v-show="isOpen" id="results" class="autocomplete-results" :class="{ 'results-open': isOpen }">
             <li class="loading" v-if="isLoading">
                 Loading results...
             </li>
@@ -26,6 +26,7 @@
                 :key="i" @click="setResult(result)"
                 class="autocomplete-result"
                 :class="{ 'is-active': i === arrowCounter }"
+                v-on:mouseover="arrowCounter = i"
             >
                 {{ result }}
             </li>
@@ -90,16 +91,16 @@
         },
         methods: {
             onArrowDown() {
-                let div = document.getElementById("results");
+                let div = document.querySelector(".results-open");
                 div.scrollTop += 25;
 
-                if (this.arrowCounter < this.results.length) {
+                if (this.arrowCounter < this.results.length - 1) {
                     this.arrowCounter++;
                     this.search = this.results[this.arrowCounter];
                 }
             },
             onArrowUp() {
-                let div = document.getElementById("results");
+                let div = document.querySelector(".results-open");
                 div.scrollTop -= 25;
 
                 if (this.arrowCounter > 0) {
@@ -114,10 +115,10 @@
                 this.changed = false;
             },
             onTab() {
-                if (this.arrowCounter === 0 && this.results[0] && this.changed) {
+                if (this.isOpen && this.arrowCounter === 0 && this.results[0] && this.changed) {
                     this.search = this.results[0];
                 }
-                else if (this.results[0] && this.changed){
+                else if (this.isOpen && this.results[0] && this.changed){
                     this.search = this.results[this.arrowCounter];
                 }
                 this.isOpen = false;
