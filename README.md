@@ -1,39 +1,5 @@
 # IMS-Vue
 
-## Project setup
-```
-npm install
-```
+The IMS is a web-based application intended for keeping track of store inventory. It is a purpose-built, internal application created for a client. 
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Run your tests
-```
-npm run test
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Run your end-to-end tests
-```
-npm run test:e2e
-```
-
-### Run your unit tests
-```
-npm run test:unit
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+It was built using Vue.js and is hosted using Firebase Hosting. Cloud Firestore is used for the back-end database. At scale, the database will store over 10,000+ entries. 
