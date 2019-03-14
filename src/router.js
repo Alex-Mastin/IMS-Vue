@@ -103,6 +103,11 @@ export default new Router({
             component: () => import('./views/NewSign.vue')
         },
         {
+            path: '/signmaker/large/new',
+            name: 'New Large Sign',
+            component: () => import('./views/LargeSignMaker.vue')
+        },
+        {
             path: '/reports',
             name: 'Reports',
             component: () => import('./views/Reports.vue')
@@ -111,6 +116,11 @@ export default new Router({
             path: '/signmaker/printqueue',
             name: 'Print Queue',
             component: () => import('./views/PrintQueue.vue')
+        },
+        {
+            path: '/signmaker/printqueue/large',
+            name: 'Large Print Queue',
+            component: () => import('./views/LargePrintQueue.vue')
         },
         {
             path: '/signmaker/printqueue/:month-:day-:year/:id',
@@ -133,12 +143,14 @@ export default new Router({
             component: () => import('./views/BugReport.vue')
         },
         {
-            path: '/about',
-            name: 'about',
-            // route level code-splitting
-            // this generates a separate chunk (about.[hash].js) for this route
-            // which is lazy-loaded when the route is visited.
-            component: () => import(/* webpackChunkName: "about" */ './views/About.vue')
+            path: '/user/',
+            name: 'User',
+            component: () => import('./views/User.vue')
+        },
+        {
+            path: '/technicians/',
+            name: 'Technicians',
+            component: () => import('./views/Technicians.vue')
         },
         {
             path: "*",

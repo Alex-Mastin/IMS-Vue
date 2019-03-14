@@ -14,7 +14,7 @@
                         </span>
                     </div>
                     <div class="font-xl" v-if="selected.length === 0">
-                        Results for "{{ $route.query.query }}"
+                        Results for "{{ $route.query.query }}" ({{ results }} results)
                     </div>
                     <dropdown
                             v-else
@@ -47,13 +47,13 @@
                                 <input type="checkbox" @change="checkboxChecked($event, device.id)">
                             </td>
                             <td class="overflow">
-                                <a>{{ device.firstName }} {{ device.lastName }}</a>
+                                <a @click="viewUser(device.firstName, device.lastName)">{{ device.firstName }} {{ device.lastName }}</a>
                             </td>
                             <td class="overflow">{{ device.manufacturer }}</td>
                             <td class="overflow">{{ device.model }}</td>
                             <td class="overflow">{{ device.comments }}</td>
                             <td class="overflow">{{ device.sku }}</td>
-                            <td class="overflow">{{ device.date }}</td>
+                            <td class="overflow">{{ device.date.toDate().toLocaleDateString() }}</td>
                         </tr>
                         <tr v-if="devices.length === 0">
                             <td colspan="8" class="no-results">
@@ -130,6 +130,12 @@
                 selected: [],
                 modifyOption: '',
                 options: ['Edit', 'Delete'],
+                results: 0,
+                manufacturerCount: 0,
+                modelCount: 0,
+                carrierCount: 0,
+                skuCount: 0,
+                commentsCount: 0
             }
         },
         computed: {
@@ -137,23 +143,17 @@
                 return this.devices.sort((a, b) => {
                     let modifier = 1;
                     if (this.sortDirection === 'desc') modifier = -1;
-
-                    if (this.currentSort === 'date') {
-                        if (new Date(a[this.currentSort]) < new Date(b[this.currentSort])) return -1 * modifier;
-                        if (new Date(a[this.currentSort]) > new Date(b[this.currentSort])) return 1 * modifier;
-
-                    }
-
-                    else {
-                        if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
-                        if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
-                    }
+                    if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
+                    if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
 
                     return 0;
                 });
             }
         },
         methods: {
+            viewUser(firstName, lastName) {
+                this.$router.push('/user/?fneq=' + firstName + '&lneq=' + lastName);
+            },
             selectAll() {
                 let selectAll = document.querySelector(".selectAll");
                 let checkboxes = document.querySelectorAll("input[type=checkbox]:not(.selectAll)");
@@ -376,37 +376,94 @@
 
             if (query) {
                 setTimeout(() => {
-                    database.collection("returns").where("manufacturer", "==", query).onSnapshot(snapshot => {
+                    database.collection("returns").where("manufacturer", ">=", query).onSnapshot(snapshot => {
+                        let x = 0;
                         snapshot.docChanges().forEach(change => {
                             if (change.type === 'added') {
                                 let doc = change.doc.data();
-                                doc.id = change.doc.id;
 
-                                this.devices.push(doc)
+                                if (doc.manufacturer.includes(query)) {
+                                    doc.id = change.doc.id;
+                                    this.devices.push(doc);
+                                    x++;
+                                }
                             }
-                        })
+                        });
+                        this.results -= this.manufacturerCount;
+                        this.manufacturerCount = x;
+                        this.results += this.manufacturerCount;
                     });
 
-                    database.collection("returns").where("model", "==", query).onSnapshot(snapshot => {
+                    database.collection("returns").where("model", ">=", query).onSnapshot(snapshot => {
+                        let x = 0;
                         snapshot.docChanges().forEach(change => {
                             if (change.type === 'added') {
                                 let doc = change.doc.data();
-                                doc.id = change.doc.id;
 
-                                this.devices.push(doc)
+                                if (doc.model.includes(query)) {
+                                    doc.id = change.doc.id;
+                                    this.devices.push(doc);
+                                    x++;
+                                }
                             }
-                        })
+                        });
+                        this.results -= this.modelCount;
+                        this.modelCount = x;
+                        this.results += this.modelCount;
                     });
 
-                    database.collection("returns").where("sku", "==", query).onSnapshot(snapshot => {
+                    database.collection("returns").where("carrier", ">=", query).onSnapshot(snapshot => {
+                        let x = 0;
                         snapshot.docChanges().forEach(change => {
                             if (change.type === 'added') {
                                 let doc = change.doc.data();
-                                doc.id = change.doc.id;
 
-                                this.devices.push(doc)
+                                if (doc.carrier.includes(query)) {
+                                    doc.id = change.doc.id;
+                                    this.devices.push(doc);
+                                    x++;
+                                }
                             }
-                        })
+                        });
+                        this.results -= this.carrierCount;
+                        this.carrierCount = x;
+                        this.results += this.carrierCount;
+                    });
+
+                    database.collection("returns").where("sku", ">=", query).onSnapshot(snapshot => {
+                        let x = 0;
+                        snapshot.docChanges().forEach(change => {
+                            if (change.type === 'added') {
+                                let doc = change.doc.data();
+
+                                if (doc.sku.includes(query)) {
+                                    doc.id = change.doc.id;
+                                    this.devices.push(doc);
+                                    x++;
+                                }
+                            }
+                        });
+                        this.results -= this.skuCount;
+                        this.skuCount = x;
+                        this.results += this.skuCount;
+                    });
+
+                    database.collection("returns").where("comments", ">=", query).onSnapshot(snapshot => {
+                        let x = 0;
+                        snapshot.docChanges().forEach(change => {
+                            if (change.type === 'added') {
+                                let doc = change.doc.data();
+
+                                if (doc.comments.includes(query)) {
+                                    doc.id = change.doc.id;
+                                    this.devices.push(doc);
+                                    x++;
+                                }
+                            }
+                        });
+                        this.results -= this.commentsCount;
+                        this.commentsCount = x;
+                        this.results += this.commentsCount;
                     });
                 }, 50);
             }

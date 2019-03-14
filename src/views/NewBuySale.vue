@@ -114,7 +114,7 @@
                     let model = document.getElementById("model").value;
                     let carrier = document.getElementById("carrier").value;
                     let capacity = document.getElementById("capacity").value;
-                    let sku = document.getElementById("sku").value;
+                    let sku = document.getElementById("sku").value.toUpperCase();
                     let buy = document.querySelector("#buy");
                     let sale = document.querySelector("#sale");
                     let id = String(new Date().getTime());
@@ -138,10 +138,11 @@
                             sku: sku,
                             buy: buy.checked,
                             sale: sale.checked,
-                            day: this.getDay(),
-                            month: this.getMonth(),
-                            year: this.getYear(),
-                            date: this.getDate()
+                            day: Number(this.getDay()),
+                            month: Number(this.getMonth()),
+                            year: Number(this.getYear()),
+                            date: new Date(this.getDate()),
+                            time: new Date().toLocaleTimeString()
                         };
 
                         database.collection('buysale').doc(id).get()
@@ -197,6 +198,7 @@
             },
         },
         created() {
+
             database.collection('manufacturer').orderBy('manufacturer').get()
                 .then(snapshot => {
                     snapshot.forEach(doc => {

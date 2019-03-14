@@ -1,6 +1,6 @@
 <template>
     <div :id="id" :class="{ 'to-delete': this.delete === true }">
-        <div :class="{ 'sign': this.$route.name === 'New Sign', 'sign-preview': this.$route.name === 'Print Queue' }">
+        <div :class="{ 'sign': this.$route.name === 'New Large Sign', 'sign-preview': this.$route.name === 'Large Print Queue' }">
             <div v-if="removable" class="sign-delete" @click="showConfirm"></div>
             <div>
                 <table>
@@ -27,61 +27,76 @@
                                     </g>
                                 </svg>
                             </td>
-                            <td class="sign-cell">
-                                <input id="sign-price" class="sign-price sign-value" :value="'$' + price" autocomplete="off">
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="sign-cell right-adjust top-adjust">
+                                <input id="sign-product" class="sign-product sign-cell sign-value left" v-model="manufacturer" autocomplete="off">
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="sign-cell right-adjust">
+                                <input id="sign-model" class="sign-model sign-cell sign-value left" v-model="model" autocomplete="off">
+                            </td>
+                            <td></td>
+                        </tr>
+                        <br>
+                        <tr>
+                            <td class="sign-cell right-adjust">
+                                <input id="sign-cpu" class="sign-cpu sign-cell sign-value left" v-model="cpu" autocomplete="off">
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="sign-cell right-adjust">
+                                <input id="sign-ram" class="sign-ram sign-cell sign-value left" :value="memory + ' RAM'" autocomplete="off">
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="sign-cell right-adjust">
+                                <input id="sign-drive" class="sign-drive sign-cell sign-value left" :class="{ 'msrp-adjust' : msrp}" :value="capacity" autocomplete="off">
+                            </td>
+                            <td class="sign-cell left-adjust" v-if="msrp">
+                                <!--<span>Original Price:</span>-->
+                                <!--<input id="sign-price" class="sign-msrp sign-value" :value="'$' + price" autocomplete="off">-->
+                                <input id="sign-msrp" class="sign-msrp sign-value" :value="'$' + msrp" @input="updateSavings()" autocomplete="off">
+                                <span class="msrp-text right">Original Price: </span>
+                            </td>
+                            <td v-else></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td class="sign-cell left-adjust">
+                                <input id="sign-price" class="sign-price sign-value" :value="'$' + price" @input="updateSavings()" autocomplete="off">
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="2" class="sign-cell">
-                                <input id="sign-product" class="sign-product sign-cell sign-value" v-model="product" @input="updateMSRP" :created="updateMSRP()" autocomplete="off">
+                            <td class="right-adjust">
+                                <input id="sign-comment" class="sign-value sign-comment" v-model='comment' autocomplete="off">
+                            </td>
+                            <td v-if="!msrp"></td>
+                            <td class="sign-cell left-adjust" v-else>
+                                <!--<span>Original Price:</span>-->
+                                <!--<input id="sign-price" class="sign-msrp sign-value" :value="'$' + price" autocomplete="off">-->
+                                <span class="savings-text right">You Save: ${{ savings }} ({{ savingsPercent}}%)</span>
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="2" class="sign-cell">
-                                <input id="sign-capacity" class="sign-storage sign-cell sign-value" v-model="productCapacity" autocomplete="off" @input="updateMSRP">
+                            <td></td>
+                            <td class="sign-cell left-adjust">
+                                <!--<span>Original Price:</span>-->
+                                <!--<input id="sign-price" class="sign-msrp sign-value" :value="'$' + price" autocomplete="off">-->
+                                <span class="warranty-text right">Free initial set-up, 90-day warranty</span>
                             </td>
                         </tr>
-                        <tr>
-                            <td colspan="2"
-                                class="sign-cell"
-                                :id="carrierCell"
-                            >
-                                <input
-                                    :id='carrierId'
-                                    class="sign-carrier sign-cell sign-value"
-                                    @input="styleCarrier"
-                                    :value="carrier"
-                                    autocomplete="off">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2"
-                                :id="commentCell"
-                                :class="{'sign-cell': true, 'sign-comment': comment}">
-                                <input
-                                    :id="commentId"
-                                    :class="{'sign-cell': true, 'sign-value': true, 'sign-comment': comment }"
-                                    :value="comment"
-                                    @input="highlightComment"
-                                    autocomplete="off"
-                                >
-                            </td>
-                        </tr>
-                        <tr v-if="msrp">
-                            <td colspan="1" class="sign-cell sign-msrp">
-                                <input id="sign-msrp" class="sign-cell sign-value sign-msrp" :value="'MSRP: $' + msrp" disabled autocomplete="off">
-                            </td>
-                            <td colspan="1" class="sign-cell sign-sku">
-                                <input id="sign-sku" class="sign-cell sign-value sign-sku inputSKU" style="margin-top: -3px;" v-model="sku" autocomplete="off">
-                            </td>
-                        </tr>
-                        <tr v-else>
-                            <td colspan="2" class="sign-cell sign-sku">
-                                <input id="sign-sku" class="sign-cell sign-value sign-sku inputSKU" v-model="sku" autocomplete="off">
-                            </td>
+                        <tr v-if="!msrp">
+                            <td class="savings-spacer"></td>
                         </tr>
                     </tbody>
                 </table>
+                <span class="trade-text center">Trade-in your old computer, cell phone, or tablet to save even more!</span>
             </div>
         </div>
     </div>
@@ -91,7 +106,7 @@
     import database from '@/components/firebaseInit.js';
 
     export default {
-        name: "sign",
+        name: "large-sign",
         props: {
             manufacturer: {
                 type: String,
@@ -101,13 +116,25 @@
                 type: String,
                 required: true,
             },
-            carrier: {
+            cpu: {
+                type: String,
+                required: true,
+            },
+            memory: {
                 type: String,
                 required: true,
             },
             capacity: {
                 type: String,
                 required: true,
+            },
+            drive: {
+                type: String,
+                required: true,
+            },
+            msrp: {
+                type: Number,
+                required: false,
             },
             price: {
                 type: Number,
@@ -128,8 +155,8 @@
         },
         data() {
             return {
-                msrps: [],
-                msrp: '',
+                savings: this.msrp - this.price,
+                savingsPercent: Math.ceil(((this.msrp - this.price) / this.msrp) * 100),
                 product: this.manufacturer + " " + this.model,
                 productCapacity: this.capacity,
                 isPreview: this.$route.name === '',
@@ -142,40 +169,23 @@
             }
         },
         methods: {
-            highlightComment() {
-                let comment = document.querySelector("#" + this.commentId).value;
+            updateSavings() {
+                let msrp = document.querySelector("#sign-msrp").value.replace("$", "");
+                let price = document.querySelector("#sign-price").value.replace("$", "");
 
-                if (comment) {
-                    document.querySelector("#" + this.commentCell).classList.add("sign-comment");
-                    document.querySelector("#" + this.commentId).classList.add("sign-comment");
-                }
-
-                else {
-                    document.querySelector("#" + this.commentCell).classList.remove("sign-comment");
-                    document.querySelector("#" + this.commentId).classList.remove("sign-comment");
-                }
-            },
-            styleCarrier() {
-                let comment = document.getElementById(this.carrierId).value;
-
-                if (comment.includes("Unlocked")) {
-                    document.getElementById(this.carrierCell).classList.add("unlocked");
-                    document.getElementById(this.carrierId).classList.add("unlocked");
+                if (msrp === "") {
+                    msrp = "0";
                 }
 
-                else {
-                    document.getElementById(this.carrierCell).classList.remove("unlocked");
-                    document.getElementById(this.carrierId).classList.remove("unlocked");
+                if (price === "") {
+                    price = "0";
                 }
-            },
-            updateMSRP() {
-                for (let product of this.msrps) {
-                    if (product.manufacturer + " " + product.model === this.product && product.capacity + 'GB' === this.productCapacity) {
-                        this.msrp = product.msrp;
-                        return;
-                    }
-                }
-                this.msrp = '';
+
+                this.savings = (msrp - price).toFixed(2);
+                this.savingsPercent = Math.ceil(((msrp - price) / msrp) * 100);
+
+                this.msrp = msrp;
+                this.price = price;
             },
             showConfirm() {
                 this.delete = true;
@@ -193,93 +203,91 @@
                     text: message,
                     type: type
                 })
-            },
-            deleteSign() {
-                let self = this;
-                let sign = document.getElementsByClassName("to-delete")[0];
-                let signDiv = sign.parentNode;
-                let queue = signDiv.parentNode;
-
-                database.collection("signs").where("sku", "==", this.sku).get()
-                    .then(querySnapshot => {
-                        querySnapshot.forEach((doc) => {
-                            doc.ref.delete().then(() => {
-                                console.log("Document successfully deleted!");
-                                setTimeout(function() {
-                                    self.showModal('The sign was successfully deleted!', 'success');
-                                }, 300);
-
-                                // Remove element from DOM
-                                queue.removeChild(signDiv);
-
-                            }).catch((error) => {
-                                console.error("Error removing document: ", error);
-                                setTimeout(function() {
-                                    self.showModal('An error occurred. The sign was not deleted.', 'error');
-                                }, 300);
-                            })
-                        })
-                    });
-
-                // Necessary to prevent 'undefined' errors
-                this.delete = false;
-
-                // Close dialog
-                this.$root.$emit('closeConfirm');
             }
-
         },
         created() {
-            database.collection('msrp').orderBy('model').get()
-                .then(snapshot => {
-                    snapshot.forEach(doc => {
-                        let manufacturer = doc.data().manufacturer;
-                        let model = doc.data().model;
-                        let msrp = doc.data().msrp;
-                        let capacity = doc.data().capacity;
 
-                        this.msrps.push({
-                            manufacturer: manufacturer,
-                            model: model,
-                            msrp: msrp,
-                            capacity: capacity,
-                        });
-
-                        setTimeout(() => {
-                            // This is here to ensure that IDs that are set using (new Date.getTime()) are not the same.
-                        }, 1)
-                    })
-                });
         },
         mounted() {
-            this.$root.$on('confirm', data => {
-                if (this.delete) {
-                    this.deleteSign();
-                }
-            });
 
-            this.styleCarrier();
         },
     }
 </script>
 
 <style scoped>
+
+    .msrp-adjust {
+        position: relative;
+        top: -7px;
+    }
+
+    .top-adjust {
+        padding-top: 10px;
+    }
+
+    .right-adjust {
+        padding-left: 20px;
+    }
+
+    .left-adjust {
+        padding-right: 10px;
+    }
+
+    .msrp-text {
+        font-size: 18px;
+        line-height: 47px;
+        position: relative;
+        top: 4px;
+        color: #aaa;
+    }
+
+    .savings-text {
+        font-size: 20px;
+        color: #aaa;
+        position: relative;
+        bottom: 5px;
+    }
+
+    .savings-spacer {
+        padding: 21.5px;
+    }
+
+    .warranty-text {
+        font-size: 16px;
+        color: #f89728;
+
+    }
+
+    .sign-comment {
+        font-size: 16px;
+        text-transform: uppercase;
+    }
+
+    .trade-text {
+        position: relative;
+        top: 5px;
+        left: 110px;
+    }
+
     table {
         border: none;
     }
 
     .sign {
-        height: 14em;
+        height: 30em;
+        width: 42.15em;
+        position: absolute;
+        left: 30.15em;
         background-color: #fff;
-        zoom: 89%;
+        zoom: 50%;
     }
 
     .sign-preview {
-        height: 14.325em;
-        width: 25.175em;
+        height: 31.97em;
+        width: 44.77em;
         background-color: #fff;
-        max-height: 14.75em;
-        zoom: 89%;
+        max-height: 32em;
+        zoom: 96%;
     }
 
     .dp-logo {
@@ -289,26 +297,27 @@
     }
 
     .sign-logo {
-        height: 3.85em;
-        width: 14em;
+        height: 4.25em;
+        width: 15.75em;
         background-size: 12em;
         background-position: 1em;
         display: table;
     }
 
     .bottom-border {
-        border-bottom: 4px solid #8dc63f !important;
+        border-bottom: 6px solid #8dc63f !important;
     }
 
     .sign-cell {
-        text-align: center;
-        padding: 5px 10px;
         border-bottom: none !important;
         font-family: 'Metropolis SemiBold', sans-serif;
-        margin: auto;
     }
 
-    input.sign-value {
+    input.sign-model {
+        width: 150%!important;
+    }
+
+    input.sign-value:not(.sign-msrp) {
         padding: 0;
         width: 100%;
     }
@@ -332,35 +341,35 @@
     }
 
     .sign-price {
-        font-size: 25px;
+        font-size: 64px;
         font-family: "Metropolis Black" !important;
         border-bottom: none !important;
         text-align: right;
-        width: 5em!important;
+        width: 4.5em!important;
         float: right;
     }
 
     .sign-product {
-        font-size: 18px;
+        font-size: 28px;
         font-family: "Metropolis Bold" !important;
     }
 
-    .sign-comment {
-        color: #df6869 !important;
-        background-color: yellow;
-        text-transform: uppercase;
-        font-family: 'Metropolis Bold';
-        border-bottom: none !important;
+    .sign-model {
+        font-size: 22px;
+    }
+
+    .sign-cpu, .sign-ram, .sign-drive {
+        font-size: 22px;
     }
 
     .sign-msrp {
-        text-align: left !important;
-        font-size: 15px;
-        position: relative;
-        border-bottom: none !important;
-        text-transform: uppercase;
+        font-size: 32px;
         font-family: 'Metropolis Bold';
-        width: 50%;
+        text-decoration: line-through;
+        text-decoration-color: red;
+        text-align: right;
+        float: right;
+        width: 4.8em!important;
     }
 
     .sign-sku {
@@ -384,9 +393,9 @@
         width: 20px;
         height: 12px;
         position: absolute;
-        left: 23.86em;
+        left: 43.4em;
     }
-    
+
     .sign-delete:hover::before {
         content: '\00d7';
         position: absolute;

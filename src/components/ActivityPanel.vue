@@ -45,19 +45,19 @@
         },
         created() {
             if (this.content === 'buys') {
-                database.collection('buysale').where("date", "==", this.getFullDate()).where("buy", "==", true).onSnapshot(snapshot => {
+                database.collection('buysale').where("date", "==", new Date(this.getFullDate())).where("buy", "==", true).onSnapshot(snapshot => {
                     this.quantity = snapshot.size;
                 });
             }
 
             else if (this.content === 'sales') {
-                database.collection('buysale').where("date", "==", this.getFullDate()).where("sale", "==", true).onSnapshot(snapshot => {
+                database.collection('buysale').where("date", "==", new Date(this.getFullDate())).where("sale", "==", true).onSnapshot(snapshot => {
                     this.quantity = snapshot.size;
                 });
             }
 
             else if (this.content === 'returns') {
-                database.collection('returns').where("date", "==", this.getFullDate()).onSnapshot(snapshot => {
+                database.collection('returns').where("date", "==", new Date(this.getFullDate())).onSnapshot(snapshot => {
                     this.quantity = snapshot.size;
                 });
             }

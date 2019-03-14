@@ -9,7 +9,7 @@
                         <btn primary small add content="New" @click.native="routeTo('/buysale/new')"></btn>
                     </div>
                     <div class="font-xl">
-                        Results for {{ search }}
+                        Results for {{ search }} {{ results }}
                     </div>
                 </div>
             </div>
@@ -30,7 +30,7 @@
                                 </div>
                             </div>
                             <div id="buys" class="transaction-column-content">
-                                <div class="transaction-list-item" v-for="buy in buys">
+                                <div class="transaction-list-item" v-for="buy in sortedBuys">
                                     <div class="width-10">
                                         <div>
                                             <input type="checkbox" @click="selectBuy($event, buy.id)">
@@ -42,7 +42,7 @@
                                         </div>
                                         <div class="transaction-technician">
                                             <span class="block">
-                                                <a class="no-select">
+                                                <a class="no-select" @click="viewUser(buy.firstName, buy.lastName)">
                                                     {{ buy.firstName }} {{ buy.lastName }}
                                                 </a>
                                             </span>
@@ -61,7 +61,7 @@
                                         </div>
                                         <div class="transaction-date">
                                             <label class="text-muted font-light no-select">
-                                                {{ buy.date }}
+                                                {{ buy.date.toDate().toLocaleDateString() }}
                                             </label>
                                         </div>
                                     </div>
@@ -85,7 +85,7 @@
                                 </div>
                             </div>
                             <div id="sales" class="transaction-column-content">
-                                <div class="transaction-list-item" v-for="sale in sales">
+                                <div class="transaction-list-item" v-for="sale in sortedSales">
                                     <div class="width-10">
                                         <div>
                                             <input type="checkbox" @click="selectSale($event, sale.id)">
@@ -118,7 +118,7 @@
                                         </div>
                                         <div class="transaction-date">
                                             <label class="text-muted font-light no-select">
-                                                {{ sale.date }}
+                                                {{ sale.date.toDate().toLocaleDateString() }}
                                             </label>
                                         </div>
                                     </div>
@@ -155,10 +155,16 @@
                 sales: [],
                 selectedBuys: [],
                 selectedSales: [],
-                search: ''
+                search: '',
+                results: '',
+                currentSort: 'date',
+                sortDirection: 'desc',
             }
         },
         methods: {
+            viewUser(firstName, lastName) {
+                this.$router.push('/user/?fneq=' + firstName + '&lneq=' + lastName);
+            },
             routeTo(route) {
                 this.$router.push(route);
             },
@@ -405,49 +411,35 @@
                             parsedQuery.push({
                                 primary: 'Date',
                                 quantifier: '<',
-                                queryText: query[key].replace(/-/g, '/')
+                                queryText: new Date(query[key])
                             });
                             break;
                         case 'dle':
                             parsedQuery.push({
                                 primary: 'Date',
                                 quantifier: '<=',
-                                queryText: query[key].replace(/-/g, '/')
+                                queryText: new Date(query[key])
                             });
                             break;
                         case 'deq':
                             parsedQuery.push({
                                 primary: 'Date',
                                 quantifier: '==',
-                                queryText: query[key].replace(/-/g, '/')
+                                queryText: new Date(query[key])
                             });
                             break;
                         case 'dge':
                             parsedQuery.push({
                                 primary: 'Date',
                                 quantifier: '>=',
-                                queryText: query[key].replace(/-/g, '/')
+                                queryText: new Date(query[key])
                             });
                             break;
                         case 'dgt':
                             parsedQuery.push({
                                 primary: 'Date',
                                 quantifier: '>',
-                                queryText: query[key].replace(/-/g, '/')
-                            });
-                            break;
-                        case 'buy':
-                            parsedQuery.push({
-                                primary: 'Buy',
-                                quantifier: '==',
-                                queryText: true
-                            });
-                            break;
-                        case 'sale':
-                            parsedQuery.push({
-                                primary: 'Sale',
-                                quantifier: '==',
-                                queryText: true
+                                queryText: new Date(query[key])
                             });
                             break;
                     }
@@ -471,6 +463,26 @@
         computed: {
             today() {
                 return this.getFullDate();
+            },
+            sortedBuys() {
+                return this.buys.sort((a, b) => {
+                    let modifier = 1;
+                    if (this.sortDirection === 'desc') modifier = -1;
+                    if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
+                    if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
+
+                    return 0;
+                });
+            },
+            sortedSales() {
+                return this.sales.sort((a, b) => {
+                    let modifier = 1;
+                    if (this.sortDirection === 'desc') modifier = -1;
+                    if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
+                    if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
+
+                    return 0;
+                });
             }
         },
         created() {
@@ -480,9 +492,6 @@
                 setTimeout(() => {
                     switch (query.length) {
                         case 1:
-                            // Modify 'Results for ___' text
-                            this.search = query[0].primary + " " + query[0].quantifier + " " + query[0].queryText;
-
                             database.collection('buysale')
                                 .where(this.camelCase(query[0].primary), query[0].quantifier, query[0].queryText)
                                 .onSnapshot(snapshot => {
@@ -498,8 +507,15 @@
                                                 this.sales.push(doc);
                                             }
                                         }
-                                    })
+                                    });
+                                    this.results = "(" + snapshot.size + " results)";
                                 });
+
+                            // Modify 'Results for ___' text
+                            if (typeof query[0].queryText === "object") {
+                                query[0].queryText = query[0].queryText.toLocaleDateString();
+                            }
+                            this.search = query[0].primary + " " + query[0].quantifier + " " + query[0].queryText;
                             break;
                         case 2:
                             // Modify 'Results for ___' text
@@ -522,8 +538,22 @@
                                                 this.sales.push(doc);
                                             }
                                         }
-                                    })
+                                    });
+                                    this.results = "(" + snapshot.size + " results)";
                                 });
+
+                            // Modify 'Results for ___' text
+                            if (typeof query[0].queryText === "object") {
+                                query[0].queryText = query[0].queryText.toLocaleDateString();
+                            }
+
+                            if (typeof query[1].queryText === "object") {
+                                query[1].queryText = query[1].queryText.toLocaleDateString();
+                            }
+
+                            this.search = query[0].primary + " " + query[0].quantifier + " " + query[0].queryText + ", "
+                                + query[1].primary + " " + query[1].quantifier + " " + query[1].queryText;
+
                             break;
                         case 3:
                             // Modify 'Results for ___' text
@@ -548,8 +578,27 @@
                                                 this.sales.push(doc);
                                             }
                                         }
-                                    })
+                                    });
+                                    this.results = "(" + snapshot.size + " results)";
                                 });
+
+                            // Modify 'Results for ___' text
+                            if (typeof query[0].queryText === "object") {
+                                query[0].queryText = query[0].queryText.toLocaleDateString();
+                            }
+
+                            if (typeof query[1].queryText === "object") {
+                                query[1].queryText = query[1].queryText.toLocaleDateString();
+                            }
+
+                            if (typeof query[2].queryText === "object") {
+                                query[2].queryText = query[2].queryText.toLocaleDateString();
+                            }
+
+                            this.search = query[0].primary + " " + query[0].quantifier + " " + query[0].queryText + ", "
+                                + query[1].primary + " " + query[1].quantifier + " " + query[1].queryText + ", "
+                                + query[2].primary + " " + query[2].quantifier + " " + query[2].queryText;
+
                             break;
                         default:
                             this.showModal('An error has occurred. Please refresh the page', 'error');

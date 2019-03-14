@@ -1,5 +1,6 @@
 <template>
     <div id="storestocknew" v-title="title">
+        <confirm-dialog></confirm-dialog>
         <modal></modal>
         <div class="column form-column">
             <div class="column-header header-btm-border">
@@ -92,7 +93,7 @@
                 capacity: '',
                 comments: '',
                 sku: '',
-                options: ['Cellbie', 'Cleaned', 'DPOS', 'Replaced Battery', 'Replaced Screen', 'Windows installation'],
+                options: ['Battery replacement', 'Cellbie', 'Cleaned', 'DPOS', 'OS installation', 'Screen replacement'],
                 sold: false,
                 ready: false
             }
@@ -101,8 +102,20 @@
             routeTo(route) {
                 this.$router.push(route);
             },
+            toNewTab(route) {
+                let routeData = this.$router.resolve({path: route});
+                window.open(routeData.href, '_blank');
+            },
             back() {
                 this.$router.go(-1);
+            },
+            showConfirm() {
+                this.$root.$emit('openConfirm', {
+                    closed: false,
+                    text: 'Would you like to create a sign for this device?',
+                    type: 'warning',
+                    dimScreen: true
+                });
             },
             save() {
                 let self = this;
@@ -111,6 +124,7 @@
                 if (form.reportValidity()) {
 
                     // Sourcing these values manually instead of using v-model because v-model doesn't get the whole value when tabbing to autofill
+                    let validModels = ['iPhone', 'iPad', 'iPod', 'Galaxy', 'Pixel'];
                     let firstName = document.getElementById("technician").value;
                     let lastName = document.getElementById("technicianTwo").value;
                     let manufacturer = document.getElementById("manufacturer").value;
@@ -119,7 +133,7 @@
                     let capacity = document.getElementById("capacity").value;
                     let actions = document.getElementById("actionsTwo").value;
                     let comments = document.getElementById("comments").value;
-                    let sku = document.getElementById("sku").value;
+                    let sku = document.getElementById("sku").value.toUpperCase();
 
                     let product = {
                         firstName: firstName,
@@ -133,10 +147,11 @@
                         sku: sku,
                         sold: this.sold,
                         ready: this.ready,
-                        day: this.getDay(),
-                        month: this.getMonth(),
-                        year: this.getYear(),
-                        date: this.getDate()
+                        day: Number(this.getDay()),
+                        month: Number(this.getMonth()),
+                        year: Number(this.getYear()),
+                        date: new Date(this.getDate()),
+                        time: new Date().toLocaleTimeString()
                     };
 
                     database.collection('devices').doc(sku).get()
@@ -147,8 +162,8 @@
                                 // Compare JSON objects to see if there has been any updates
                                 let updates = self.compareJSON(docSnapshot.data(), product);
 
-                                console.log("---");
-                                console.log(updates.comments);
+                                // console.log("---");
+                                // console.log(updates.comments);
 
                                 // If updates occurred...
                                 if (updates.update) {
@@ -167,7 +182,13 @@
                                     database.collection('devices').doc(sku).update(update)
                                         .then(() => {
                                             console.log("Document written with ID: ", sku);
-                                            self.routeTo('/storestock')
+                                            if (validModels.includes(product.manufacturer.split(" ")[0])) {
+                                                // Make sign for device?
+                                                this.showConfirm();
+                                            }
+                                            else {
+                                                this.routeTo('/storestock');
+                                            }
                                         })
                                         .catch((error) => {
                                             console.error("Error adding document: ", error);
@@ -184,7 +205,14 @@
                                 database.collection('devices').doc(sku).set(product)
                                     .then(() => {
                                         console.log("Document written with ID: ", sku);
-                                        self.routeTo('/storestock')
+
+                                        if (validModels.includes(product.manufacturer.split(" ")[0])) {
+                                            // Make sign for device?
+                                            this.showConfirm();
+                                        }
+                                        else {
+                                            this.routeTo('/storestock');
+                                        }
                                     })
                                     .catch((error) => {
                                         console.error("Error adding document: ", error);
@@ -248,7 +276,7 @@
                 return updates;
             },
             formatComment(key, originalJSON, newJSON) {
-                if (key !== 'day' && key !== 'month' && key !== 'year' && key !== 'date' && key !== 'firstName' && key !== 'lastName') {
+                if (key !== 'day' && key !== 'month' && key !== 'year' && key !== 'date' && key !== 'time' && key !== 'firstName' && key !== 'lastName') {
                     let originalValue = originalJSON[key];
                     let newValue = newJSON[key];
                     let change;
@@ -288,6 +316,23 @@
 
                 return month + "/" + day + "/" + year;
             },
+            updateOptions() {
+                let manufacturer = document.querySelector("#manufacturer").value;
+                let product = document.querySelector("#model").value;
+                let phoneOptions = ['iPhone', 'iPad', 'Galaxy'];
+                let computerOptions = ['ASUS', 'Acer', 'Alienware', 'Compaq', 'Dell', 'Gateway', 'HP', 'iMac', 'Lenovo', 'LG', 'MacBook', 'Microsoft', 'MSI', 'Samsung', 'Toshiba'];
+
+                // If iPhone, iPad or Galaxy
+                if (phoneOptions.some(substring => product.includes(substring))) {
+                    this.options = ['Battery replacement', 'Cellbie', 'Cleaned', 'Dock port replacement', 'Proxy replacement', 'Screen replacement'];
+                }
+
+                // If made by certain manufacturers or is an Apple computer
+                else if (computerOptions.some(substring => manufacturer.includes(substring) && !product.includes(substring)) || (computerOptions.some(substring => product.includes(substring)))) {
+                    this.options = ['Cleaned', 'DPOS', 'Extended hard drive', 'Hard drive installation', 'OS activation', 'OS installation'];
+                }
+
+            }
         },
         created() {
             database.collection('manufacturer').orderBy('manufacturer').get()
@@ -324,6 +369,26 @@
         },
         mounted() {
             document.getElementById("date").value = this.getFullDate();
+
+            this.$root.$on('confirm', data => {
+                if (this.$route.name === 'New Store Stock') {
+                    let manufacturer = document.getElementById("manufacturer").value;
+                    let model = document.getElementById("model").value;
+                    let carrier = document.getElementById("carrier").value;
+                    let capacity = document.getElementById("capacity").value;
+                    let sku = document.getElementById("sku").value.toUpperCase();
+
+                    this.toNewTab('/signmaker/new/?manufacturer=' + manufacturer + '&model=' + model + '&carrier=' + carrier + '&capacity=' + capacity + '&sku=' + sku);
+                }
+            });
+
+            // User chose not to create a sign for the device. Route back to Store Stock Tracker.
+            this.$root.$on('dialogClosing', data => {
+                this.routeTo('/storestock');
+            });
+        },
+        beforeUpdate() {
+            this.updateOptions();
         }
     }
 </script>

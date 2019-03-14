@@ -3,34 +3,19 @@
         <modal></modal>
         <confirm-dialog></confirm-dialog>
         <div class="sign-page">
-            <div class="queue-left">
-                <div v-for="(sign, i) in signsLeft" :key="i">
-                    <sign
-                            :manufacturer="sign.manufacturer"
-                            :model="sign.model"
-                            :carrier="sign.carrier"
-                            :capacity="sign.capacity"
-                            :price=Number(sign.price)
-                            :comment="sign.comments"
-                            :sku="sign.sku"
-                            removable
-                    ></sign>
-                </div>
-            </div>
-            <div class="queue-right">
-                <div v-for="(sign, i) in signsRight" :key="i">
-                    <sign
-                            :manufacturer="sign.manufacturer"
-                            :model="sign.model"
-                            :carrier="sign.carrier"
-                            :capacity="sign.capacity"
-                            :price=Number(sign.price)
-                            :comment="sign.comments"
-                            :sku="sign.sku"
-                            removable
-                    ></sign>
-                </div>
-            </div>
+            <large-sign v-for="(sign, i) in largeSigns" :key="i"
+                    :manufacturer="sign.manufacturer"
+                    :model="sign.model"
+                    :cpu="sign.cpu"
+                    :memory="sign.ram"
+                    :capacity="sign.capacity"
+                    :drive="getDrive(sign.capacity)"
+                    :msrp=Number(sign.msrp)
+                    :price=Number(sign.price)
+                    :comment="sign.comments"
+                    :sku="sign.sku"
+                    :removable="true"
+            ></large-sign>
         </div>
 
     </div>
@@ -38,21 +23,35 @@
 
 <script>
     import database from '@/components/firebaseInit.js'
-    import Sign from "../components/Sign";
+    import LargeSign from "@/components/LargeSign.vue";
     import ConfirmDialog from "@/components/ConfirmDialog.vue";
     import Modal from '@/components/Modal.vue'
 
     export default {
-        name: "PrintQueue",
+        name: "LargePrintQueue",
         components: {
-            Sign,
+            LargeSign,
             ConfirmDialog,
             Modal
         },
         methods: {
+            getDrive(drive) {
+                if (drive.includes("HDD")) {
+                    return "HDD";
+                }
+                else if (drive.includes("SSD")) {
+                    return "SSD";
+                }
+                else if (drive.includes("SSHD")) {
+                    return "SSHD";
+                }
+                else {
+                    return "";
+                }
+            },
             clearQueue() {
                 return Promise.all(
-                    database.collection("signs").get()
+                    database.collection("largesigns").get()
                         .then(querySnapshot => {
                             querySnapshot.forEach((doc) => {
                                 doc.ref.delete().then(() => {
@@ -83,8 +82,7 @@
         data() {
             return {
                 title: 'Print Queue | Device Pitstop - Maple Grove',
-                signsLeft: [],
-                signsRight: [],
+                largeSigns: [],
                 signCount: 0
             }
         },
@@ -92,7 +90,7 @@
             let counter = 0;
             let self = this;
 
-            database.collection('signs').onSnapshot(snapshot => {
+            database.collection('largesigns').onSnapshot(snapshot => {
                 snapshot.docChanges().forEach(change => {
                     // console.log(change.type);
                     if (change.type === 'added') {
@@ -101,20 +99,18 @@
                         let sign = {
                             manufacturer: doc.manufacturer,
                             model: doc.model,
+                            cpu: doc.cpu,
+                            ram: doc.ram,
                             capacity: doc.capacity,
-                            carrier: doc.carrier,
                             comments: doc.comments,
                             price: doc.price,
                             sku: doc.sku,
                             msrp: doc.msrp,
                         };
 
-                        if (counter % 2 === 0) {
-                            this.signsRight.push(sign);
-                        }
-                        else {
-                            this.signsLeft.push(sign);
-                        }
+                        console.log(doc.capacity);
+
+                        this.largeSigns.push(sign);
                     }
                 });
                 self.signCount = snapshot.size;
@@ -124,34 +120,29 @@
             let self = this;
 
             this.$root.$on('confirm', data => {
-                let toDelete = document.querySelector(".to-delete");
-                if (!toDelete) {
-                    this.clearQueue()
-                        .then(() => {
-                            setTimeout(function() {
-                                self.showModal('All signs were successfully removed.', 'success');
-                            }, 300);
-                        }).catch((error) => {
-                            setTimeout(function() {
-                                if (!error.message.includes("object is not iterable")) {
-                                    console.error(error);
-                                    self.showModal('An error has occurred. Some signs were not removed.', 'error');
-                                }
-                                // If the error includes "Object is not iterable" it's just some unimportant error.
-                                // The signs were still removed, and it should show success.
-                                else {
-                                    setTimeout(function() {
-                                        self.showModal('All signs were successfully removed.', 'success');
-                                    }, 300);
-                                }
+                this.clearQueue()
+                    .then(() => {
+                        setTimeout(function() {
+                            self.showModal('All signs were successfully removed.', 'success');
+                        }, 300);
+                    }).catch((error) => {
+                        setTimeout(function() {
+                            if (!error.message.includes("object is not iterable")) {
+                                console.error(error);
+                                self.showModal('An error has occurred. Some signs were not removed.', 'error');
+                            }
+                            else {
+                                setTimeout(function() {
+                                    self.showModal('All signs were successfully removed.', 'success');
+                                }, 300);
+                            }
 
-                            }, 300);
-                        })
-                }
+                        }, 300);
+                })
             });
 
             window.onafterprint = () => {
-                this.showConfirm('Would you like to clear the signs in the queue?', 'warning');
+                this.showConfirm('Would you like to clear this sign from the queue?', 'warning');
             };
         }
     }
@@ -175,8 +166,8 @@
         }
 
         #print-queue {
-            padding-top: 0.81em;
-            padding-left: 2.3em;
+            /*padding-top: 0.81em;*/
+            /*padding-left: 2.3em;*/
         }
 
         .sign-preview *{
@@ -197,6 +188,10 @@
 
         tr:not(#comment-cell):hover {
             background-color: #fff;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: unset;
         }
 
     }

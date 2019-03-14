@@ -71,7 +71,7 @@
                     let to = "mastin.alexander@gmail.com";
                     let from = document.getElementById("from").value;
                     let subject = document.getElementById("subject").value;
-                    let content = document.getElementById("content").value;
+                    let content = document.getElementById("content").value + "\n Sent from: " + from;
                     let regex = "[\\w-]+@([\\w-]+\\.)+[\\w-]+";
 
                     // Check that email format is correct (ex. example@example.com)
@@ -81,8 +81,8 @@
                             Username : "mastin.alexander@gmail.com",
                             Password : "488c22e7-4cf0-46f6-bfbb-630899a1ec46",
                             To : 'mastin.alexander@gmail.com',
-                            From : from,
-                            Subject : "IMS - Feature Request: " + subject,
+                            From : 'dpimssr@gmail.com',
+                            Subject : "[Maple Grove] IMS - Feature Request: " + subject,
                             Body : content
                         }).then(
                             message => {
@@ -109,12 +109,27 @@
                                         type: 'error'
                                     });
                                 }
+
+                                // Daily limit exceeded
+                                else if (message.includes("Error: 421")) {
+                                    self.$root.$emit('openModal', {
+                                        closed: false,
+                                        text: 'The support service has exceeded its daily limit. Sorry!',
+                                        type: 'error'
+                                    });
+                                }
                             }
 
                         );
                     }
 
-
+                    else {
+                        self.$root.$emit('openModal', {
+                            closed: false,
+                            text: 'Please enter a valid email!',
+                            type: 'error'
+                        });
+                    }
                 }
             },
         },

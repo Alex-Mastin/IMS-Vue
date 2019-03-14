@@ -60,12 +60,29 @@
                     {
                         title: 'Phone Buy-in Prices',
                         url: 'https://docs.google.com/spreadsheets/d/1bSqmdCgQtfvKq9_CBDETy3vcrrYaJ4OnbxsVODHjcTU/edit#gid=0'
-                    }
+                    },
+                    {
+                        title: 'Retail Part Cost Calculator',
+                        url: 'https://docs.google.com/spreadsheets/d/1xrrvPgxzDjSlqvmz8oCXwQ7xNt-9TMmoS0_dCxJ0ZQY/edit#gid=1195361612'
+                    },
+                    {
+                        title: 'Test to Buy Offer Calculator',
+                        url: 'https://docs.google.com/spreadsheets/d/1lc2mDrlp9v8-6-31gvYkhQ4cwI4PnZAN3tt7NbVIdrc/edit#gid=0'
+                    },
+                    {
+                        title: 'Cycle Count Worksheet',
+                        url: 'https://tinyurl.com/y5arcgha'
+                    },
+
                 ],
                 activity: [
                     {
                         title: 'Closing Report',
                         url: 'https://docs.google.com/forms/d/e/1FAIpQLSdF4yTZE8xzRQIkjQKH9biHIoX_pVxvEWnC-BjcBi4HC6XZGQ/viewform'
+                    },
+                    {
+                        title: 'BIOS Keys for Laptops',
+                        url: 'https://docs.google.com/spreadsheets/d/1tFiuPaRotCPaHEPccHr2sqjVy6OSwSpoHAFxu2-kfhA/edit#gid=0'
                     }
                 ]
             }

@@ -117,7 +117,7 @@
                 let model = document.getElementById("model").value;
                 let carrier = document.getElementById("carrier").value;
                 let capacity = document.getElementById("capacity").value;
-                let sku = document.getElementById("sku").value;
+                let sku = document.getElementById("sku").value.toUpperCase();
 
                 this.manufacturer = manufacturer;
                 this.model = model;
@@ -157,10 +157,11 @@
                         sku: sku,
                         sold: this.sold,
                         ready: this.ready,
-                        day: this.getDay(),
-                        month: this.getMonth(),
-                        year: this.getYear(),
-                        date: this.getDate()
+                        day: Number(this.getDay()),
+                        month: Number(this.getMonth()),
+                        year: Number(this.getYear()),
+                        date: new Date(this.getDate()),
+                        time: new Date().toLocaleTimeString()
                     };
 
                     database.collection('devices').doc(this.$route.params.id).get()
@@ -271,8 +272,6 @@
                     }
                 }
 
-                console.log(updates);
-
                 // If update occurred...
                 if (updates.update) {
                     let date = this.getDate();
@@ -294,7 +293,7 @@
                 return updates;
             },
             formatComment(key, originalJSON, newJSON) {
-                if (key !== 'day' && key !== 'month' && key !== 'year' && key !== 'date' && key !== 'firstName' && key !== 'lastName') {
+                if (key !== 'day' && key !== 'month' && key !== 'year' && key !== 'date' && key !== 'firstName' && key !== 'lastName' && key !== 'time') {
                     let originalValue = originalJSON[key];
                     let newValue = newJSON[key];
                     let change;
@@ -337,6 +336,24 @@
             routeTo(route) {
                 this.$router.push(route);
             },
+            updateOptions() {
+                // Using this function prevents the ability to populate #actionsTwo with text with JavaScript. It seems to be updating the v-model of the component, and even updating it after the fact doesn't fix it.
+
+                let manufacturer = document.querySelector("#manufacturer").value;
+                let product = document.querySelector("#model").value;
+                let phoneOptions = ['iPhone', 'iPad', 'Galaxy'];
+                let computerOptions = ['ASUS', 'Acer', 'Alienware', 'Compaq', 'Dell', 'Gateway', 'HP', 'iMac', 'Lenovo', 'LG', 'MacBook', 'Microsoft', 'MSI', 'Samsung', 'Toshiba'];
+
+                // If iPhone, iPad or Galaxy
+                if (phoneOptions.some(substring => product.includes(substring))) {
+                    this.options = ['Battery replacement', 'Cellbie', 'Cleaned', 'Dock port replacement', 'Proxy replacement', 'Screen replacement'];
+                }
+
+                // If made by certain manufacturers or is an Apple computer
+                else if (computerOptions.some(substring => manufacturer.includes(substring) && !product.includes(substring)) || (computerOptions.some(substring => product.includes(substring)))) {
+                    this.options = ['Cleaned', 'DPOS', 'Extended hard drive', 'Hard drive installation', 'OS activation', 'OS installation'];
+                }
+            }
         },
         created() {
             database.collection('manufacturer').orderBy('manufacturer').get()
@@ -383,8 +400,13 @@
                     document.getElementById("carrier").value = doc.carrier;
                     document.getElementById("capacity").value = doc.capacity;
                     document.getElementById("actionsTwo").value = doc.actions;
-                    if (doc.comments) {
+
+                    if (doc.comments && doc.comments.includes("\n")) {
+
                         document.getElementById("commentHistory").value = doc.comments.join('\n');
+                    }
+                    else if (doc.comments) {
+                        document.getElementById("commentHistory").value = doc.comments.join("");
                     }
                     document.getElementById("sku").value = doc.sku;
                     document.getElementById("date").value = this.getFullDate();
@@ -392,7 +414,14 @@
                     this.ready = doc.ready;
 
                     this.updateVModels();
-                })
+                });
+
+        },
+        beforeUpdate() {
+            // This was not working for some reason.
+            // I believe it's because populating the fields updates the v-models and it messes with the function's ability to check for something.
+            // I'm not sure. I just know it doesn't work.
+            // this.updateOptions();
         }
     }
 </script>

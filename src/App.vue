@@ -19,7 +19,7 @@
         },
         methods: {
             showNavigation() {
-              return this.$route.name !== "Print Queue" && this.$route.name !== "Page Not Found"
+              return this.$route.name !== "Print Queue" && this.$route.name !== "Large Print Queue" && this.$route.name !== "Page Not Found"
             }
         }
     }
@@ -85,6 +85,54 @@
       #new-sign .preview {
         width: 40%;
       }
+
+      .stats-table {
+        width: 90%;
+      }
+
+      .changelog {
+        width: 35.5%!important;
+        height: 45%!important;
+      }
+
+      .changelog-content .content {
+        max-height: 255px;
+      }
+    }
+
+    @media screen and (max-width: 1680px) {
+      /* Dashboard */
+      #dashboard .dashboard-section {
+        width: 120%!important;
+      }
+
+      /* Store Stock / Returns Tracker */
+      #storestock #column, #returns #column {
+        width: 95%!important;
+      }
+
+      /* Sign Maker */
+      #new-sign .form-column {
+        width: 50.5%;
+      }
+
+      /* Sign Maker */
+      #new-sign .preview {
+        width: 40%;
+      }
+
+      .stats-table {
+        width: 90%;
+      }
+
+      .changelog {
+        width: 35.5%!important;
+        height: 45%!important;
+      }
+
+      .changelog-content .content {
+        max-height: 260px;
+      }
     }
 
     @media  screen and (max-width: 1920px) {
@@ -110,6 +158,20 @@
       /* Sign Maker */
       #new-sign .preview {
         width: 35%;
+      }
+
+      .changelog {
+        width: 32.5%!important;
+        height: 45%!important;
+      }
+
+      .changelog-content .content {
+        max-height: 295px;
+      }
+
+      #new-large-sign .sign {
+        position: relative;
+        left: 0;
       }
     }
 
@@ -166,12 +228,24 @@
       font-size: 13px;
     }
 
+    .font-md {
+      font-size: 18px;
+    }
+
     .font-lg {
       font-size: 20px;
     }
 
+    .font-xlg {
+      font-size: 25px;
+    }
+
     .font-xl {
       font-size: 26px;
+    }
+
+    .font-thin {
+      font-family: "Metropolis Thin" !important;
     }
 
     .font-light {
@@ -182,8 +256,16 @@
       font-family: "Metropolis Regular" !important;
     }
 
+    .font-medium {
+      font-family: "Metropolis Medium" !important;
+    }
+
     .font-sb {
       font-family: "Metropolis SemiBold" !important;
+    }
+
+    .font-black {
+      font-family: "Metropolis Black" !important;
     }
 
     .legend {
@@ -401,5 +483,10 @@
       max-width: inherit!important;
     }
 
+    @media print {
+      ::-webkit-scrollbar-thumb {
+        background-color: rgba(0,0,0,0);
+      }
+    }
 
 </style>

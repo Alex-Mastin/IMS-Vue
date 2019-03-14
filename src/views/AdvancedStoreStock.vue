@@ -14,7 +14,7 @@
                         </span>
                     </div>
                     <div class="font-xl" v-if="selected.length === 0">
-                        Results for {{ search }}
+                        Results for {{ search }} {{ results }}
                     </div>
                     <dropdown
                             v-else
@@ -47,13 +47,13 @@
                                 <input type="checkbox" @change="checkboxChecked($event, device.id)">
                             </td>
                             <td class="overflow">
-                                <a>{{ device.firstName }} {{ device.lastName }}</a>
+                                <a @click="viewUser(device.firstName, device.lastName)">{{ device.firstName }} {{ device.lastName }}</a>
                             </td>
                             <td class="overflow">{{ device.manufacturer }}</td>
                             <td class="overflow">{{ device.model }}</td>
                             <td class="overflow">{{ device.actions }}</td>
                             <td class="overflow">{{ device.sku }}</td>
-                            <td class="overflow">{{ device.date }}</td>
+                            <td class="overflow">{{ device.date.toDate().toLocaleDateString() }}</td>
                             <td class="overflow no-padding">
                                 <div class="status">
                                     <ready-icon :class="{ 'right-spacer': true, 'shift-up': device.sold, 'shift-down': !device.sold }" v-if="device.ready"></ready-icon>
@@ -141,7 +141,8 @@
                 selected: [],
                 modifyOption: '',
                 options: ['Edit', 'Mark as Sold', 'Mark as Not Sold', 'Mark as Ready for Floor', 'Mark as Not Ready for Floor', 'Delete'],
-                search: ''
+                search: '',
+                results: ''
             }
         },
         computed: {
@@ -149,23 +150,17 @@
                 return this.devices.sort((a, b) => {
                     let modifier = 1;
                     if (this.sortDirection === 'desc') modifier = -1;
-
-                    if (this.currentSort === 'date') {
-                        if (new Date(a[this.currentSort]) < new Date(b[this.currentSort])) return -1 * modifier;
-                        if (new Date(a[this.currentSort]) > new Date(b[this.currentSort])) return 1 * modifier;
-
-                    }
-
-                    else {
-                        if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
-                        if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
-                    }
+                    if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
+                    if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
 
                     return 0;
                 });
             }
         },
         methods: {
+            viewUser(firstName, lastName) {
+                this.$router.push('/user/?fneq=' + firstName + '&lneq=' + lastName);
+            },
             selectAll() {
                 let selectAll = document.querySelector(".selectAll");
                 let checkboxes = document.querySelectorAll("input[type=checkbox]:not(.selectAll)");
@@ -429,35 +424,35 @@
                             parsedQuery.push({
                                 primary: 'Date',
                                 quantifier: '<',
-                                queryText: query[key].replace(/-/g, '/')
+                                queryText: new Date(query[key])
                             });
                             break;
                         case 'dle':
                             parsedQuery.push({
                                 primary: 'Date',
                                 quantifier: '<=',
-                                queryText: query[key].replace(/-/g, '/')
+                                queryText: new Date(query[key])
                             });
                             break;
                         case 'deq':
                             parsedQuery.push({
                                 primary: 'Date',
                                 quantifier: '==',
-                                queryText: query[key].replace(/-/g, '/')
+                                queryText: new Date(query[key])
                             });
                             break;
                         case 'dge':
                             parsedQuery.push({
                                 primary: 'Date',
                                 quantifier: '>=',
-                                queryText: query[key].replace(/-/g, '/')
+                                queryText: new Date(query[key])
                             });
                             break;
                         case 'dgt':
                             parsedQuery.push({
                                 primary: 'Date',
                                 quantifier: '>',
-                                queryText: query[key].replace(/-/g, '/')
+                                queryText: new Date(query[key])
                             });
                             break;
                         case 'ready':
@@ -495,13 +490,28 @@
         created() {
             let query = this.getQuery();
 
+            database.collection('returns').where("firstName", "==", "Jacob").get()
+                .then(snapshot => {
+                    console.log(snapshot.size);
+                    let batch = database.batch();
+
+                    snapshot.forEach(doc => {
+                        batch.update(database.collection('returns').doc(doc.id), {"firstName": 'Jake'});
+                        console.log("Updated document!");
+                    });
+
+                    batch.commit()
+                        .then(() => {
+                            console.log("Success!");
+                        }).catch((error) => {
+                            console.error(error)
+                    })
+                });
+
             if (query) {
                 setTimeout(() => {
                     switch (query.length) {
                         case 1:
-                            // Modify 'Results for ___' text
-                            this.search = query[0].primary + " " + query[0].quantifier + " " + query[0].queryText;
-
                             database.collection('devices')
                                 .where(this.camelCase(query[0].primary), query[0].quantifier, query[0].queryText)
                                 .onSnapshot(snapshot => {
@@ -512,14 +522,18 @@
 
                                         this.devices.push(doc)
                                     }
-                                })
+                                });
+                                this.results = "(" + snapshot.size + " results)";
                             });
+
+                            // Modify 'Results for ___' text
+                            if (typeof query[0].queryText === "object") {
+                                query[0].queryText = query[0].queryText.toLocaleDateString();
+                            }
+                            this.search = query[0].primary + " " + query[0].quantifier + " " + query[0].queryText;
+
                             break;
                         case 2:
-                            // Modify 'Results for ___' text
-                            this.search = query[0].primary + " " + query[0].quantifier + " " + query[0].queryText + ", "
-                                        + query[1].primary + " " + query[1].quantifier + " " + query[1].queryText;
-
                             database.collection('devices')
                                 .where(this.camelCase(query[0].primary), query[0].quantifier, query[0].queryText)
                                 .where(this.camelCase(query[1].primary), query[1].quantifier, query[1].queryText)
@@ -531,15 +545,24 @@
 
                                         this.devices.push(doc)
                                     }
-                                })
+                                });
+                                this.results = "(" + snapshot.size + " results)";
                             });
+
+                            // Modify 'Results for ___' text
+                            if (typeof query[0].queryText === "object") {
+                                query[0].queryText = query[0].queryText.toLocaleDateString();
+                            }
+
+                            if (typeof query[1].queryText === "object") {
+                                query[1].queryText = query[1].queryText.toLocaleDateString();
+                            }
+
+                            this.search = query[0].primary + " " + query[0].quantifier + " " + query[0].queryText + ", "
+                                + query[1].primary + " " + query[1].quantifier + " " + query[1].queryText;
+
                             break;
                         case 3:
-                            // Modify 'Results for ___' text
-                            this.search = query[0].primary + " " + query[0].quantifier + " " + query[0].queryText + ", "
-                                        + query[1].primary + " " + query[1].quantifier + " " + query[1].queryText + ", "
-                                        + query[2].primary + " " + query[2].quantifier + " " + query[2].queryText;
-
                             database.collection('devices')
                                 .where(this.camelCase(query[0].primary), query[0].quantifier, query[0].queryText)
                                 .where(this.camelCase(query[1].primary), query[1].quantifier, query[1].queryText)
@@ -552,8 +575,26 @@
 
                                         this.devices.push(doc)
                                     }
-                                })
+                                });
+                                this.results = "(" + snapshot.size + " results)";
                             });
+                            // Modify 'Results for ___' text
+                            if (typeof query[0].queryText === "object") {
+                                query[0].queryText = query[0].queryText.toLocaleDateString();
+                            }
+
+                            if (typeof query[1].queryText === "object") {
+                                query[1].queryText = query[1].queryText.toLocaleDateString();
+                            }
+
+                            if (typeof query[2].queryText === "object") {
+                                query[2].queryText = query[2].queryText.toLocaleDateString();
+                            }
+
+                            this.search = query[0].primary + " " + query[0].quantifier + " " + query[0].queryText + ", "
+                                + query[1].primary + " " + query[1].quantifier + " " + query[1].queryText + ", "
+                                + query[2].primary + " " + query[2].quantifier + " " + query[2].queryText;
+
                             break;
                         default:
                             this.showModal('An error has occurred. Please refresh the page', 'error');

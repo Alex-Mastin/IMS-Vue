@@ -9,7 +9,7 @@
                         <btn primary small add content="New" @click.native="routeTo('/buysale/new')"></btn>
                     </div>
                     <div class="font-xl">
-                        Results for "{{ $route.query.query }}"
+                        Results for "{{ $route.query.query }}" ({{ results }} results)
                     </div>
                 </div>
             </div>
@@ -30,7 +30,7 @@
                                 </div>
                             </div>
                             <div id="buys" class="transaction-column-content">
-                                <div class="transaction-list-item" v-for="buy in buys">
+                                <div class="transaction-list-item" v-for="buy in sortedBuys">
                                     <div class="width-10">
                                         <div>
                                             <input type="checkbox" @click="selectBuy($event, buy.id)">
@@ -42,7 +42,7 @@
                                         </div>
                                         <div class="transaction-technician">
                                             <span class="block">
-                                                <a class="no-select">
+                                                <a class="no-select" @click="viewUser(buy.firstName, buy.lastName)">
                                                     {{ buy.firstName }} {{ buy.lastName }}
                                                 </a>
                                             </span>
@@ -61,7 +61,7 @@
                                         </div>
                                         <div class="transaction-date">
                                             <label class="text-muted font-light no-select">
-                                                {{ buy.date }}
+                                                {{ buy.date.toDate().toLocaleDateString() }}
                                             </label>
                                         </div>
                                     </div>
@@ -85,7 +85,7 @@
                                 </div>
                             </div>
                             <div id="sales" class="transaction-column-content">
-                                <div class="transaction-list-item" v-for="sale in sales">
+                                <div class="transaction-list-item" v-for="sale in sortedSales">
                                     <div class="width-10">
                                         <div>
                                             <input type="checkbox" @click="selectSale($event, sale.id)">
@@ -118,7 +118,7 @@
                                         </div>
                                         <div class="transaction-date">
                                             <label class="text-muted font-light no-select">
-                                                {{ sale.date }}
+                                                {{ sale.date.toDate().toLocaleDateString() }}
                                             </label>
                                         </div>
                                     </div>
@@ -155,9 +155,19 @@
                 sales: [],
                 selectedBuys: [],
                 selectedSales: [],
+                results: 0,
+                manufacturerCount: 0,
+                modelCount: 0,
+                carrierCount: 0,
+                skuCount: 0,
+                currentSort: 'date',
+                sortDirection: 'desc',
             }
         },
         methods: {
+            viewUser(firstName, lastName) {
+                this.$router.push('/user/?fneq=' + firstName + '&lneq=' + lastName);
+            },
             routeTo(route) {
                 this.$router.push(route);
             },
@@ -447,6 +457,26 @@
         computed: {
             today() {
                 return this.getFullDate();
+            },
+            sortedBuys() {
+                return this.buys.sort((a, b) => {
+                    let modifier = 1;
+                    if (this.sortDirection === 'desc') modifier = -1;
+                    if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
+                    if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
+
+                    return 0;
+                });
+            },
+            sortedSales() {
+                return this.sales.sort((a, b) => {
+                    let modifier = 1;
+                    if (this.sortDirection === 'desc') modifier = -1;
+                    if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
+                    if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
+
+                    return 0;
+                });
             }
         },
         created() {
@@ -454,68 +484,100 @@
 
             if (query) {
                 setTimeout(() => {
-                    database.collection("buysale").where("manufacturer", "==", query).onSnapshot(snapshot => {
+                    database.collection("buysale").where("manufacturer", ">=", query).onSnapshot(snapshot => {
+                        let x = 0;
                         snapshot.docChanges().forEach(change => {
                             if (change.type === 'added') {
                                 let doc = change.doc.data();
-                                doc.id = change.doc.id;
 
-                                if (doc.buy) {
-                                    this.buys.push(doc);
-                                }
-                                else if (doc.sale) {
-                                    this.sales.push(doc);
+                                if (doc.manufacturer.includes(query)) {
+                                    doc.id = change.doc.id;
+
+                                    if (doc.buy) {
+                                        this.buys.push(doc);
+                                    }
+                                    else if (doc.sale) {
+                                        this.sales.push(doc);
+                                    }
+                                    x++;
                                 }
                             }
-                        })
+                        });
+                        this.results -= this.manufacturerCount;
+                        this.manufacturerCount = x;
+                        this.results += this.manufacturerCount;
                     });
 
-                    database.collection("buysale").where("model", "==", query).onSnapshot(snapshot => {
+                    database.collection("buysale").where("model", ">=", query).onSnapshot(snapshot => {
+                        let x = 0;
                         snapshot.docChanges().forEach(change => {
                             if (change.type === 'added') {
                                 let doc = change.doc.data();
-                                doc.id = change.doc.id;
 
-                                if (doc.buy) {
-                                    this.buys.push(doc);
-                                }
-                                else if (doc.sale) {
-                                    this.sales.push(doc);
+                                if (doc.model.includes(query)) {
+                                    doc.id = change.doc.id;
+
+                                    if (doc.buy) {
+                                        this.buys.push(doc);
+                                    }
+                                    else if (doc.sale) {
+                                        this.sales.push(doc);
+                                    }
+                                    x++;
                                 }
                             }
-                        })
+                        });
+                        this.results -= this.modelCount;
+                        this.modelCount = x;
+                        this.results += this.modelCount;
                     });
 
-                    database.collection("buysale").where("carrier", "==", query).onSnapshot(snapshot => {
+                    database.collection("buysale").where("carrier", ">=", query).onSnapshot(snapshot => {
+                        let x = 0;
                         snapshot.docChanges().forEach(change => {
                             if (change.type === 'added') {
                                 let doc = change.doc.data();
-                                doc.id = change.doc.id;
 
-                                if (doc.buy) {
-                                    this.buys.push(doc);
-                                }
-                                else if (doc.sale) {
-                                    this.sales.push(doc);
+                                if (doc.carrier.includes(query)) {
+                                    doc.id = change.doc.id;
+
+                                    if (doc.buy) {
+                                        this.buys.push(doc);
+                                    }
+                                    else if (doc.sale) {
+                                        this.sales.push(doc);
+                                    }
+                                    x++;
                                 }
                             }
-                        })
+                        });
+                        this.results -= this.carrierCount;
+                        this.carrierCount = x;
+                        this.results += this.carrierCount;
                     });
 
-                    database.collection("buysale").where("sku", "==", query).onSnapshot(snapshot => {
+                    database.collection("buysale").where("sku", ">=", query).onSnapshot(snapshot => {
+                        let x = 0;
                         snapshot.docChanges().forEach(change => {
                             if (change.type === 'added') {
                                 let doc = change.doc.data();
-                                doc.id = change.doc.id;
 
-                                if (doc.buy) {
-                                    this.buys.push(doc);
-                                }
-                                else if (doc.sale) {
-                                    this.sales.push(doc);
+                                if (doc.sku.includes(query)) {
+                                    doc.id = change.doc.id;
+
+                                    if (doc.buy) {
+                                        this.buys.push(doc);
+                                    }
+                                    else if (doc.sale) {
+                                        this.sales.push(doc);
+                                    }
+                                    x++;
                                 }
                             }
-                        })
+                        });
+                        this.results -= this.skuCount;
+                        this.skuCount = x;
+                        this.results += this.skuCount;
                     });
                 }, 50);
             }

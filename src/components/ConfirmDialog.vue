@@ -60,8 +60,11 @@
         methods: {
             closeDialog() {
                 let self = this;
-
                 this.closed = true;
+
+                this.$root.$emit('dialogClosing', {
+
+                });
 
                 setTimeout(function(){
                     self.wait = true;

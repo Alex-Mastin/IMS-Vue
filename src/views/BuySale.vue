@@ -30,7 +30,7 @@
                                 </div>
                             </div>
                             <div id="buys" class="transaction-column-content">
-                                <div class="transaction-list-item" v-for="buy in buys">
+                                <div class="transaction-list-item" v-for="buy in sortedBuys">
                                     <div class="width-10">
                                         <div>
                                             <input type="checkbox" @click="selectBuy($event, buy.id)">
@@ -42,7 +42,7 @@
                                         </div>
                                         <div class="transaction-technician">
                                             <span class="block">
-                                                <a class="no-select">
+                                                <a class="no-select" @click="viewUser(buy.firstName, buy.lastName)">
                                                     {{ buy.firstName }} {{ buy.lastName }}
                                                 </a>
                                             </span>
@@ -61,7 +61,7 @@
                                         </div>
                                         <div class="transaction-date">
                                             <label class="text-muted font-light no-select">
-                                                {{ buy.date }}
+                                                {{ buy.date.toDate().toLocaleDateString() }}
                                             </label>
                                         </div>
                                     </div>
@@ -85,7 +85,7 @@
                                 </div>
                             </div>
                             <div id="sales" class="transaction-column-content">
-                                <div class="transaction-list-item" v-for="sale in sales">
+                                <div class="transaction-list-item" v-for="sale in sortedSales">
                                     <div class="width-10">
                                         <div>
                                             <input type="checkbox" @click="selectSale($event, sale.id)">
@@ -99,7 +99,7 @@
                                         </div>
                                         <div class="transaction-technician">
                                             <span class="block">
-                                                <a class="no-select">
+                                                <a class="no-select" @click="viewUser(sale.firstName, sale.lastName)">
                                                     {{ sale.firstName }} {{ sale.lastName }}
                                                 </a>
                                             </span>
@@ -118,7 +118,7 @@
                                         </div>
                                         <div class="transaction-date">
                                             <label class="text-muted font-light no-select">
-                                                {{ sale.date }}
+                                                {{ sale.date.toDate().toLocaleDateString() }}
                                             </label>
                                         </div>
                                     </div>
@@ -155,9 +155,14 @@
                 sales: [],
                 selectedBuys: [],
                 selectedSales: [],
+                currentSort: 'date',
+                sortDirection: 'desc',
             }
         },
         methods: {
+            viewUser(firstName, lastName) {
+                this.$router.push('/user/?fneq=' + firstName + '&lneq=' + lastName);
+            },
             routeTo(route) {
                 this.$router.push(route);
             },
@@ -382,14 +387,34 @@
         computed: {
             today() {
                 return this.getFullDate();
+            },
+            sortedBuys() {
+                return this.buys.sort((a, b) => {
+                    let modifier = 1;
+                    if (this.sortDirection === 'desc') modifier = -1;
+                    if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
+                    if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
+
+                    return 0;
+                });
+            },
+            sortedSales() {
+                return this.sales.sort((a, b) => {
+                    let modifier = 1;
+                    if (this.sortDirection === 'desc') modifier = -1;
+                    if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
+                    if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
+
+                    return 0;
+                });
             }
         },
         created() {
             let date = new Date();
-            let month = String(date.getMonth() + 1);
-            let year = String(date.getFullYear());
+            let month = date.getMonth() + 1;
+            let year = Number(date.getFullYear());
 
-            database.collection('buysale').where("buy", "==", true).where("month", "==", month).where("year", "==", year).orderBy("date", "desc").onSnapshot(snapshot => {
+            database.collection('buysale').where("buy", "==", true).where("month", "==", month).where("year", "==", year).orderBy("time", "desc").onSnapshot(snapshot => {
                 snapshot.docChanges().forEach(change => {
                     if (change.type === 'added') {
                         let doc = change.doc.data();
@@ -397,16 +422,10 @@
 
                         this.buys.push(doc)
                     }
-                    // else if (change.type === 'removed'){
-                    //     let doc = change.doc.data();
-                    //     doc.id = change.doc.id;
-                    //
-                    //     self.devices = self.devices.filter(e => e!== doc)
-                    // }
                 })
             });
 
-            database.collection('buysale').where("sale", "==", true).where("month", "==", month).where("year", "==", year).orderBy("date", "desc").onSnapshot(snapshot => {
+            database.collection('buysale').where("sale", "==", true).where("month", "==", month).where("year", "==", year).orderBy("time", "desc").onSnapshot(snapshot => {
                 snapshot.docChanges().forEach(change => {
                     if (change.type === 'added') {
                         let doc = change.doc.data();
@@ -414,12 +433,6 @@
 
                         this.sales.push(doc)
                     }
-                    // else if (change.type === 'removed'){
-                    //     let doc = change.doc.data();
-                    //     doc.id = change.doc.id;
-                    //
-                    //     self.devices = self.devices.filter(e => e!== doc)
-                    // }
                 })
             });
         },

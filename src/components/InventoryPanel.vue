@@ -1,8 +1,8 @@
 <template>
     <div class="inventory-panel">
-        <label class="font-regular font-sm uppercase text-void">{{ label }}</label>
+        <a class="font-regular font-sm uppercase text-void">{{ label }}</a>
         <label class="font-xl text-normal right inv-container">
-            <span class="font-regular">{{ quantity }}</span>
+            <a class="font-regular">{{ quantity }}</a>
         </label>
     </div>
 </template>
@@ -36,13 +36,30 @@
         },
         created() {
             if (this.content === 'new') {
-                database.collection('devices').where("date", "==", this.getFullDate()).onSnapshot(snapshot => {
+                database.collection('devices').where("date", "==", new Date(this.getFullDate())).onSnapshot(snapshot => {
                     this.quantity = snapshot.size;
                 });
             }
 
             else if (this.content === 'ready') {
                 database.collection('devices').where("ready", "==", true).onSnapshot(snapshot => {
+
+                    if (snapshot.size >= 100) {
+                        let batch = database.batch();
+
+                        snapshot.docs.forEach(doc => {
+                            let docRef = database.collection('devices').doc(doc.id);
+                            batch.update(docRef, {'ready': false});
+                        });
+
+                        batch.commit()
+                            .then(() => {
+                                console.log("There were 100 or more products marked as ready! Time to clean it up!")
+                            }).catch((error) => {
+                                console.error("An error occurred: " + error);
+                        });
+                    }
+
                     this.quantity = snapshot.size;
                 });
             }
@@ -51,6 +68,10 @@
 </script>
 
 <style scoped>
+    a {
+        color: #222;
+    }
+
     .inventory-panel {
         border: 1px solid #DAE1E4;
         border-radius: 7px;

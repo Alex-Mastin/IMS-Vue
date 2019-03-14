@@ -102,7 +102,7 @@
                     let manufacturer = document.getElementById("manufacturer").value;
                     let model = document.getElementById("model").value;
                     let comments = document.getElementById("comments").value;
-                    let sku = document.getElementById("sku").value;
+                    let sku = document.getElementById("sku").value.toUpperCase();
 
                     let product = {
                         firstName: firstName,
@@ -113,10 +113,11 @@
                         sku: sku,
                         sold: this.sold,
                         ready: this.ready,
-                        day: this.getDay(),
-                        month: this.getMonth(),
-                        year: this.getYear(),
-                        date: this.getDate()
+                        day: Number(this.getDay()),
+                        month: Number(this.getMonth()),
+                        year: Number(this.getYear()),
+                        date: new Date(this.getDate()),
+                        time: new Date().toLocaleTimeString()
                     };
 
                     database.collection('returns').doc(this.$route.params.id).get()

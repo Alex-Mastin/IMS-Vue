@@ -47,13 +47,13 @@
                                 <input type="checkbox" @change="checkboxChecked($event, device.id)">
                             </td>
                             <td class="overflow">
-                                <a>{{ device.firstName }} {{ device.lastName }}</a>
+                                <a @click="viewUser(device.firstName, device.lastName)">{{ device.firstName }} {{ device.lastName }}</a>
                             </td>
                             <td class="overflow">{{ device.manufacturer }}</td>
                             <td class="overflow">{{ device.model }}</td>
                             <td class="overflow">{{ device.comments }}</td>
                             <td class="overflow">{{ device.sku }}</td>
-                            <td class="overflow">{{ device.date }}</td>
+                            <td class="overflow">{{ device.date.toDate().toLocaleDateString() }}</td>
                         </tr>
                         <tr v-if="devices.length === 0">
                             <td colspan="8" class="no-results">
@@ -137,23 +137,17 @@
                 return this.devices.sort((a, b) => {
                     let modifier = 1;
                     if (this.sortDirection === 'desc') modifier = -1;
-
-                    if (this.currentSort === 'date') {
-                        if (new Date(a[this.currentSort]) < new Date(b[this.currentSort])) return -1 * modifier;
-                        if (new Date(a[this.currentSort]) > new Date(b[this.currentSort])) return 1 * modifier;
-
-                    }
-
-                    else {
-                        if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
-                        if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
-                    }
+                    if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
+                    if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
 
                     return 0;
                 });
             }
         },
         methods: {
+            viewUser(firstName, lastName) {
+                this.$router.push('/user/?fneq=' + firstName + '&lneq=' + lastName);
+            },
             selectAll() {
                 let selectAll = document.querySelector(".selectAll");
                 let checkboxes = document.querySelectorAll("input[type=checkbox]:not(.selectAll)");
@@ -306,10 +300,10 @@
         },
         created() {
             let date = new Date();
-            let year = String(date.getFullYear());
+            let year = Number(date.getFullYear());
             let self = this;
 
-            database.collection('returns').where("year", "==", year).orderBy("sku", "desc").onSnapshot(snapshot => {
+            database.collection('returns').where("year", "==", year).orderBy("time", "desc").onSnapshot(snapshot => {
                 snapshot.docChanges().forEach(change => {
                     if (change.type === 'added') {
                         let doc = change.doc.data();

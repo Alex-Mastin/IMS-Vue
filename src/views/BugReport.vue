@@ -72,7 +72,7 @@
                     let to = "mastin.alexander@gmail.com";
                     let from = document.getElementById("from").value;
                     let subject = document.getElementById("subject").value;
-                    let content = document.getElementById("content").value;
+                    let content = document.getElementById("content").value + "\n Sent from: " + from;
                     let steps = document.getElementById("steps").value;
                     let regex = "[\\w-]+@([\\w-]+\\.)+[\\w-]+";
 
@@ -83,8 +83,8 @@
                             Username : "mastin.alexander@gmail.com",
                             Password : "488c22e7-4cf0-46f6-bfbb-630899a1ec46",
                             To : 'mastin.alexander@gmail.com',
-                            From : from,
-                            Subject : "IMS - Feature Request: " + subject,
+                            From : 'dpimssr@gmail.com',
+                            Subject : "[Maple Grove] IMS - Bug Report: " + subject,
                             Body : content + "\n" + steps
                         }).then(
                             message => {
@@ -95,7 +95,7 @@
                                 if (message === SENT) {
                                     self.$root.$emit('openModal', {
                                         closed: false,
-                                        text: 'Your feature request has been sent!',
+                                        text: 'Your bug report has been sent!',
                                         type: 'success'
                                     });
 
@@ -124,7 +124,13 @@
 
                         );
                     }
-
+                    else {
+                        self.$root.$emit('openModal', {
+                            closed: false,
+                            text: 'Please enter a valid email!',
+                            type: 'error'
+                        });
+                    }
 
                 }
             },

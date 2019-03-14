@@ -1,22 +1,21 @@
 <template>
     <div class="form-group">
         <label :class="{ 'required': required, 'label-15': labelWidth === 15 }">{{ label }}</label>
-        <div class="right" :class="divClass()">
-            <select
+        <div class="right" :class="{ 'input-25': inputWidth === '25', 'input-50': inputWidth === '50', 'flex': select === true }">
+            <dropdown
                     v-if="select === true"
                     :id="elementId"
                     :type="type"
                     :step="step"
-                    class="form-control"
+                    text="Select an option..."
                     :class="{ 'large': small === false, 'small': small === true }"
                     autocomplete="off"
                     :placeholder="placeholder"
                     v-model="selected"
-                    @change="parseOption(selected)"
+                    @changed="parseOption($event.selected)"
+                    :options="options"
             >
-                <option value="" disabled="" selected="" hidden="">Select an option...</option>
-                <option v-for="option in options">{{ option }}</option>
-            </select>
+            </dropdown>
             <input
                     v-if="textarea === false && select === false"
                     :id="elementId"
@@ -37,7 +36,7 @@
                     :step="step"
                     class="form-control double"
                     :class="{ 'large': small === false, 'small': small === true }"
-                    :style="small === true ? 'width: 154px' : ''"
+                    :style="small === true ? 'width: 154px' : '', select === true ? 'width: 180px' : ''"
                     :required="required"
                     autocomplete="off"
                     :placeholder="placeholderTwo"
@@ -63,8 +62,13 @@
 </template>
 
 <script>
+    import Dropdown from '@/components/Dropdown.vue'
+
     export default {
         name: "form-input",
+        components: {
+            Dropdown
+        },
         props: {
             labelWidth: String,
             inputWidth: String,
@@ -133,6 +137,11 @@
                     this.inputTwo += ", " + val
                 }
             }
+        },
+        mounted() {
+            this.$root.$on('changed', data => {
+                this.parseOption(data.selected);
+            });
         }
     }
 </script>
@@ -221,6 +230,10 @@
         background-color: #f9f9f9!important;
         color: #999!important;
         cursor: not-allowed;
+    }
+
+    .flex {
+        display: flex;
     }
 
 </style>

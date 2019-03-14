@@ -1,5 +1,5 @@
 <template>
-    <div id="new-sign" v-title="title">
+    <div id="new-large-sign" v-title="title">
         <confirm-dialog></confirm-dialog>
         <modal></modal>
         <div class="column form-column">
@@ -9,7 +9,7 @@
                         <return-btn @click.native="toSignMaker()"></return-btn>
                     </div>
                     <div class="font-xl">
-                        New Sign
+                        New Large Sign
                     </div>
                 </div>
             </div>
@@ -20,9 +20,13 @@
                             <form id="sign-form" action="" autocomplete="off">
                                 <autocomplete elementId="manufacturer" :items="manufacturers" label="Manufacturer" labelWidth="15" inputWidth="50" type="text" required></autocomplete>
                                 <autocomplete elementId="model" :items="models" label="Product Model" labelWidth="15" inputWidth="50" type="text" required></autocomplete>
-                                <autocomplete elementId="carrier" :items="carriers" label="Carrier" labelWidth="15" inputWidth="50" type="text" required></autocomplete>
+                                <autocomplete elementId="identifier" :items="identifiers" label="Product Identifier" labelWidth="15" inputWidth="50" type="text"></autocomplete>
+                                <autocomplete elementId="cpu" :items="processors" label="Processor" labelWidth="15" inputWidth="50" type="text" required></autocomplete>
+                                <autocomplete elementId="memory" :items="memory" label="Memory" labelWidth="15" inputWidth="50" type="text" required></autocomplete>
                                 <autocomplete elementId="capacity" :items="capacities" label="Storage Capacity" labelWidth="15" inputWidth="50" type="text" required></autocomplete>
+                                <autocomplete elementId="drive" :items="drives" label="Storage Type" labelWidth="15" inputWidth="50" type="text" required></autocomplete>
                                 <form-input elementId="price" label="Price" labelWidth="15" inputWidth="50" type="number" :step=0.01 required></form-input>
+                                <form-input elementId="msrp" label="MSRP" labelWidth="15" inputWidth="50" type="number" :step=0.01></form-input>
                                 <form-input elementId="comments" label="Comments" labelWidth="15" inputWidth="50" type="text"></form-input>
                                 <form-input elementId="sku" label="Product SKU" labelWidth="15" inputWidth="50" type="text" required placeholder="Hint: You can scan the barcode!"></form-input>
                             </form></div>
@@ -47,7 +51,7 @@
             </div>
             <div class="page">
                 <div class="card">
-                    <sign v-if="(manufacturer, model, carrier, capacity, price, sku)" :manufacturer="manufacturer" :model="model" :carrier="carrier" :capacity="capacity" :price=Number(price) :comment="comments" :sku="sku"></sign>
+                    <large-sign :manufacturer="manufacturer" :model="model" :cpu="cpu" :capacity="capacity" :drive="drive" :memory="ram" :msrp=Number(msrp) :price=Number(price) :comment="comments" :sku="sku" v-if="(manufacturer, model, cpu, memory, capacity, drive, price, sku)"></large-sign>
                 </div>
             </div>
             <div class="btn-toolbar-center">
@@ -64,19 +68,19 @@
     import ReturnBtn  from '@/components/ReturnBtn.vue'
     import FormInput from '@/components/FormInput.vue'
     import Autocomplete from '@/components/Autocomplete.vue'
-    import Sign from '@/components/Sign.vue'
+    import LargeSign from '@/components/LargeSign.vue'
     import Modal from '@/components/Modal.vue'
     import ConfirmDialog from '@/components/ConfirmDialog.vue'
     import database from '@/components/firebaseInit.js'
 
     export default {
-        name: "NewSign",
+        name: "NewLargeSign",
         components: {
             Btn33,
             ReturnBtn,
             FormInput,
             Autocomplete,
-            Sign,
+            LargeSign,
             Modal,
             ConfirmDialog
         },
@@ -86,13 +90,21 @@
                 models: [],
                 carriers: [],
                 capacities: [],
-                title: 'Sign Maker - New Sign | Device Pitstop - Maple Grove',
+                drives: [],
+                memory: [],
+                processors: [],
+                identifiers: [],
+                title: 'Sign Maker - New Large Sign | Device Pitstop - Maple Grove',
                 manufacturer: '',
                 model: '',
+                identifier: '',
                 carrier: '',
                 capacity: '',
-                price: '',
                 comments: '',
+                cpu: '',
+                drive: '',
+                price: '',
+                ram: '',
                 sku: '',
                 msrp: '',
             }
@@ -102,7 +114,7 @@
                 this.$router.push("/signmaker");
             },
             toQueue() {
-                let routeData = this.$router.resolve({name: 'Print Queue'});
+                let routeData = this.$router.resolve({name: 'Large Print Queue'});
                 window.open(routeData.href, '_blank');
             },
             createPreview() {
@@ -110,21 +122,42 @@
 
                 if (form.reportValidity()) {
                     this.manufacturer = document.getElementById("manufacturer").value;
-                    this.model = document.getElementById("model").value;
-                    this.carrier = document.getElementById("carrier").value;
+                    this.model = this.formatModel(document.getElementById("model").value, document.getElementById("identifier").value);
+                    this.cpu = document.getElementById("cpu").value;
+                    this.ram = document.getElementById("memory").value;
                     this.capacity = document.getElementById("capacity").value;
+                    this.drive = document.getElementById("drive").value;
                     this.price = document.getElementById("price").value;
+                    this.msrp = document.getElementById("msrp").value;
                     this.comments = document.getElementById("comments").value;
                     this.sku = document.getElementById("sku").value;
 
                     form.reset();
                 }
             },
+            formatModel(model, identifier) {
+                // Removes the parenthesis and year from the model, if it exists.
+                // If model is MacBook Air 11.6" (Mid 2014), it becomes MacBook Air 11.6"
+                if (model.includes("(") && model.includes(")")) {
+                    let leftIndex = model.indexOf("(");
+                    let rightIndex = model.indexOf(")");
+                    let substring = model.substring(leftIndex, rightIndex + 1);
+
+                    model = model.replace(substring, "");
+                }
+
+                // Concatenate identifier (ex. MLUQ2LL/A)
+                if (identifier) {
+                    return model + "(" + identifier + ")";
+                }
+
+                return model;
+            },
             checkQueue() {
                 let self = this;
-                database.collection('signs').get()
+                database.collection('largesigns').get()
                     .then(snapshot => {
-                        if (snapshot.size < 10) {
+                        if (snapshot.size < 1) {
                             this.addToQueue();
                         }
                         else {
@@ -140,25 +173,28 @@
             addToQueue() {
                 let self = this;
 
-                let signValues = document.querySelector(".card") // .card
-                                .children[0] // sign-#############
-                                .children[0] // sign
-                                .children[0] // div
-                                .children[0] // table
-                                .children[0] // tbody
-                                .children; // tr collection
+                // let signValues = document.querySelector(".card") // .card
+                //     .children[0] // sign-#############
+                //     .children[0] // sign
+                //     .children[0] // div
+                //     .children[0] // table
+                //     .children[0] // tbody
+                //     .children; // tr collection
 
                 let signProduct = document.querySelector("#sign-product");
-                let signCarrier = signValues[3].children[0].children[0]; // This is necessary because you have no idea what the ID will be since it's dynamic.
-                let signCapacity = document.querySelector("#sign-capacity");
-                let signPrice = document.querySelector("#sign-price");
-                let signComments = signValues[4].children[0].children[0]; // This is necessary because you have no idea what the ID will be since it's dynamic.
+                let signModel = document.querySelector("#sign-model");
+                let signProcessor = document.querySelector("#sign-cpu");
+                let signMemory = document.querySelector("#sign-ram");
+                let signDrive = document.querySelector("#sign-drive");
                 let signMsrp = document.querySelector("#sign-msrp");
+                let signPrice = document.querySelector("#sign-price");
+                let signComments = document.querySelector("#sign-comment");
                 let signSku = document.querySelector("#sign-sku");
 
                 let manufacturer = '';
                 let model = '';
-                let carrier = '';
+                let cpu = '';
+                let ram = '';
                 let capacity = '';
                 let price = '';
                 let comments = '';
@@ -166,34 +202,33 @@
                 let sku = '';
 
                 // Validate that fields are defined
-                if (signProduct && signCarrier && signCapacity && signPrice && signComments && signSku) {
-                    let product = document.querySelector("#sign-product").value;
-                    let signManufacturer = product.split(" ")[0];
-                    let signModel = product.slice(signManufacturer.length + 1, product.length);
+                if (signProduct && signModel && signProcessor && signMemory && signDrive && signPrice && signComments) {
 
-                    manufacturer = signManufacturer;
-                    model = signModel;
-                    carrier = signCarrier.value;
-                    capacity = signCapacity.value;
+                    manufacturer = signProduct.value;
+                    model = signModel.value;
+                    cpu = signProcessor.value;
+                    ram = signMemory.value;
+                    capacity = signDrive.value;
                     price = signPrice.value;
                     price = price.replace("$", "");
                     comments = signComments.value;
-                    sku = signSku.value;
+                    sku = self.sku; // SKU is not currently being used on the sign, so we can just reference the prop.
 
                     if (signMsrp) {
                         msrp = signMsrp.value;
-                        msrp = msrp.replace("MSRP: $", "");
+                        msrp = msrp.replace("$", "");
                     }
 
                     // Add sign to database
-                    database.collection("signs").add({
+                    database.collection("largesigns").add({
                         manufacturer: manufacturer,
                         model: model,
-                        carrier: carrier,
+                        cpu: cpu,
+                        ram: ram,
                         capacity: capacity,
                         price: price,
                         comments: comments,
-                        sku: sku,
+                        sku: sku || 'N/A',
                         msrp: msrp || ''
                     }).then(function(docRef) {
                         console.log("Document written with ID: ", docRef.id);
@@ -214,42 +249,17 @@
                             });
                         });
 
-
                     this.manufacturer = '';
                     this.model = '';
-                    this.carrier = '';
+                    this.cpu = '';
+                    this.ram = '';
                     this.capacity = '';
+                    this.drive = '';
                     this.price = '';
+                    this.msrp = '';
                     this.comments = '';
                     this.sku = '';
-                    this.msrp = '';
                 }
-            },
-            getQuery() {
-                let query = this.$route.query;
-                let parsedQuery = {};
-
-                // Create objects out of query string
-                for (let key in query) {
-                    switch (key) {
-                        case 'manufacturer':
-                            parsedQuery.manufacturer = query[key];
-                            break;
-                        case 'model':
-                            parsedQuery.model = query[key];
-                            break;
-                        case 'carrier':
-                            parsedQuery.carrier = query[key];
-                            break;
-                        case 'capacity':
-                            parsedQuery.capacity = query[key];
-                            break;
-                        case 'sku':
-                            parsedQuery.sku = query[key];
-                            break;
-                    }
-                }
-                return parsedQuery;
             },
         },
         created() {
@@ -269,35 +279,40 @@
                     })
                 });
 
-            database.collection('carrier').orderBy('carrier').get()
+            database.collection('identifiers').orderBy('id').get()
                 .then(snapshot => {
                     snapshot.forEach(doc => {
-                        let carrier = doc.data().carrier;
-                        this.carriers.push(carrier);
+                        let identifier = doc.data().id;
+                        this.identifiers.push(identifier);
+                    })
+                });
+
+            database.collection('processors').orderBy('generation').get()
+                .then(snapshot => {
+                    snapshot.forEach(doc => {
+                        let processor = doc.data().manufacturer + " " + doc.data().series + " " + doc.data().model + " (" + doc.data().generation + ")";
+                        this.processors.push(processor);
                     })
                 });
 
             database.collection('capacity').orderBy('capacity', "asc").get()
                 .then(snapshot => {
                     snapshot.forEach(doc => {
-                        let capacity = String(doc.data().capacity + "GB");
+                        let capacity = doc.id.includes("tb") ? String(doc.data().capacity + "TB") : String(doc.data().capacity + "GB");
                         this.capacities.push(capacity);
+                        this.memory.push(capacity);
+                    })
+                });
+
+            database.collection('drives').orderBy('type').get()
+                .then(snapshot => {
+                    snapshot.forEach(doc => {
+                        let drive = doc.data().type;
+                        this.drives.push(drive);
                     })
                 });
         },
         mounted() {
-            document.querySelector(".dd").classList.add('open');
-
-            let query = this.getQuery();
-
-            if (query.manufacturer && query.model && query.carrier && query.capacity && query.sku) {
-                document.getElementById("manufacturer").value = query.manufacturer;
-                document.getElementById("model").value = query.model;
-                document.getElementById("carrier").value = query.carrier;
-                document.getElementById("capacity").value = query.capacity;
-                document.getElementById("sku").value = query.sku;
-            }
-
             this.$root.$on('confirm', data => {
                 this.toQueue();
             });
@@ -346,8 +361,8 @@
 
     .card {
         box-shadow: 0px 10px 20px -2px rgba(0,0,0,0.2);
-        width: 330px;
-        height: 199px;
+        width: 316px;
+        height: 236px;
         margin: 0 auto;
     }
 

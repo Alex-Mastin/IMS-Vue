@@ -21,7 +21,6 @@
 <style scoped>
 
     .arrow {
-
         height: 12px;
         width: 12px;
         fill: #444;

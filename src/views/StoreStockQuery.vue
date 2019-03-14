@@ -14,7 +14,7 @@
                         </span>
                     </div>
                     <div class="font-xl" v-if="selected.length === 0">
-                        Results for "{{ $route.query.query }}"
+                        Results for "{{ $route.query.query }}" ({{ results }} results)
                     </div>
                     <dropdown
                             v-else
@@ -47,13 +47,13 @@
                                 <input type="checkbox" @change="checkboxChecked($event, device.id)">
                             </td>
                             <td class="overflow">
-                                <a>{{ device.firstName }} {{ device.lastName }}</a>
+                                <a @click="viewUser(device.firstName, device.lastName)">{{ device.firstName }} {{ device.lastName }}</a>
                             </td>
                             <td class="overflow">{{ device.manufacturer }}</td>
                             <td class="overflow">{{ device.model }}</td>
                             <td class="overflow">{{ device.actions }}</td>
                             <td class="overflow">{{ device.sku }}</td>
-                            <td class="overflow">{{ device.date }}</td>
+                            <td class="overflow">{{ device.date.toDate().toLocaleDateString() }}</td>
                             <td class="overflow no-padding">
                                 <div class="status">
                                     <ready-icon :class="{ 'right-spacer': true, 'shift-up': device.sold, 'shift-down': !device.sold }" v-if="device.ready"></ready-icon>
@@ -141,6 +141,12 @@
                 selected: [],
                 modifyOption: '',
                 options: ['Edit', 'Mark as Sold', 'Mark as Not Sold', 'Mark as Ready for Floor', 'Mark as Not Ready for Floor', 'Delete'],
+                results: 0,
+                manufacturerCount: 0,
+                modelCount: 0,
+                carrierCount: 0,
+                skuCount: 0,
+                actionsCount: 0,
             }
         },
         computed: {
@@ -148,23 +154,18 @@
                 return this.devices.sort((a, b) => {
                     let modifier = 1;
                     if (this.sortDirection === 'desc') modifier = -1;
+                    if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
+                    if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
 
-                    if (this.currentSort === 'date') {
-                        if (new Date(a[this.currentSort]) < new Date(b[this.currentSort])) return -1 * modifier;
-                        if (new Date(a[this.currentSort]) > new Date(b[this.currentSort])) return 1 * modifier;
-
-                    }
-
-                    else {
-                        if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
-                        if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
-                    }
 
                     return 0;
                 });
             }
         },
         methods: {
+            viewUser(firstName, lastName) {
+                this.$router.push('/user/?fneq=' + firstName + '&lneq=' + lastName);
+            },
             selectAll() {
                 let selectAll = document.querySelector(".selectAll");
                 let checkboxes = document.querySelectorAll("input[type=checkbox]:not(.selectAll)");
@@ -471,61 +472,98 @@
         created() {
             let query = this.getQuery();
 
+
             if (query) {
                 setTimeout(() => {
-                    database.collection("devices").where("manufacturer", "==", query).onSnapshot(snapshot => {
+                    database.collection("devices").where("manufacturer", ">=", query).onSnapshot(snapshot => {
+                        let x = 0;
                         snapshot.docChanges().forEach(change => {
                             if (change.type === 'added') {
                                 let doc = change.doc.data();
-                                doc.id = change.doc.id;
 
-                                this.devices.push(doc)
+                                if (doc.manufacturer.includes(query)) {
+                                    doc.id = change.doc.id;
+                                    this.devices.push(doc);
+                                    x++;
+                                }
                             }
-                        })
+                        });
+
+                        this.results -= this.manufacturerCount;
+                        this.manufacturerCount = x;
+                        this.results += this.manufacturerCount;
                     });
 
-                    database.collection("devices").where("model", "==", query).onSnapshot(snapshot => {
+                    database.collection("devices").where("model", ">=", query).onSnapshot(snapshot => {
+                        let x = 0;
                         snapshot.docChanges().forEach(change => {
                             if (change.type === 'added') {
                                 let doc = change.doc.data();
-                                doc.id = change.doc.id;
 
-                                this.devices.push(doc)
+                                if (doc.model.includes(query)) {
+                                    doc.id = change.doc.id;
+                                    this.devices.push(doc);
+                                    x++;
+                                }
                             }
-                        })
+                        });
+                        this.results -= this.modelCount;
+                        this.modelCount = x;
+                        this.results += this.modelCount;
                     });
 
-                    database.collection("devices").where("carrier", "==", query).onSnapshot(snapshot => {
+                    database.collection("devices").where("carrier", ">=", query).onSnapshot(snapshot => {
+                        let x = 0;
                         snapshot.docChanges().forEach(change => {
                             if (change.type === 'added') {
                                 let doc = change.doc.data();
-                                doc.id = change.doc.id;
 
-                                this.devices.push(doc)
+                                if (doc.carrier.includes(query)) {
+                                    doc.id = change.doc.id;
+                                    this.devices.push(doc);
+                                    x++;
+                                }
                             }
-                        })
+                        });
+                        this.results -= this.carrierCount;
+                        this.carrierCount = x;
+                        this.results += this.carrierCount;
                     });
 
-                    database.collection("devices").where("sku", "==", query).onSnapshot(snapshot => {
+                    database.collection("devices").where("sku", ">=", query).onSnapshot(snapshot => {
+                        let x = 0;
                         snapshot.docChanges().forEach(change => {
                             if (change.type === 'added') {
                                 let doc = change.doc.data();
-                                doc.id = change.doc.id;
 
-                                this.devices.push(doc)
+                                if (doc.sku.includes(query)) {
+                                    doc.id = change.doc.id;
+                                    this.devices.push(doc);
+                                    x++;
+                                }
                             }
-                        })
+                        });
+                        this.results -= this.skuCount;
+                        this.skuCount = x;
+                        this.results += this.skuCount;
                     });
 
-                    database.collection("devices").where("actions", "==", query).onSnapshot(snapshot => {
+                    database.collection("devices").where("actions", ">=", query).onSnapshot(snapshot => {
+                        let x = 0;
                         snapshot.docChanges().forEach(change => {
                             if (change.type === 'added') {
                                 let doc = change.doc.data();
-                                doc.id = change.doc.id;
 
-                                this.devices.push(doc)
+                                if (doc.actions.includes(query)) {
+                                    doc.id = change.doc.id;
+                                    this.devices.push(doc);
+                                    x++;
+                                }
                             }
-                        })
+                        });
+                        this.results -= this.actionsCount;
+                        this.actionsCount = x;
+                        this.results += this.actionsCount;
                     });
                 }, 50);
             }

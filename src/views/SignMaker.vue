@@ -7,8 +7,8 @@
                 <h3 class="font-xl">Start Managing Your Store Stock!</h3>
                 <p class="text-muted">Create, customize, and save your signs.</p>
                 <div class="btn-container">
-                    <btn primary content="Create New Sign" @click.native="toNewSign" large></btn>
-                    <btn content="View Signs" @click.native="toQueue" large></btn>
+                    <btn primary content="Create New Sign" @click.native="routeTo('/signmaker/new')" large></btn>
+                    <btn content="Create Large Sign" @click.native="routeTo('/signmaker/large/new')" large></btn>
                 </div>
                 <br>
                 <h4 class="btn-link"><a @click="showConfirm()">Remove Pending Signs to be Printed</a></h4>
@@ -38,8 +38,8 @@
             }
         },
         methods: {
-            toNewSign() {
-                this.$router.push('/signmaker/new');
+            routeTo(route) {
+                this.$router.push(route);
             },
             toQueue() {
                 let routeData = this.$router.resolve({name: 'Print Queue'});

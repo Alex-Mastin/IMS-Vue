@@ -1,14 +1,16 @@
 <template>
     <div id="sidebar-container">
         <ul class="nav" id="sidebar">
-            <tab-item title="Dashboard" icon="dashboard" :active="this.getRoute('Dashboard')" v-on:click.native="toDashboard(false)" @click.middle.native="toDashboard(true)"></tab-item>
+            <tab-item title="Dashboard" icon="dashboard" :active="this.getRoute('Dashboard')" :route="'/dashboard/'" @click.middle.native="toNewTab('/dashboard/')"></tab-item>
+            <tab-item v-show='false' title="Technicians" icon="technicians" :active="this.getRoute('Technician')" :route="'/technicians/'" @click.middle.native="toNewTab('/technicians/')"></tab-item>
             <navigation-divider></navigation-divider>
-            <tab-item title="Store Stock" icon="storestock" :active="this.getRoute('Store Stock')" v-on:click.native="toStoreStock(false)" @click.middle.native="toStoreStock(true)"></tab-item>
-            <tab-item title="Big Buys/Sales" icon="buysale" :active="this.getRoute('Buy/Sale')" v-on:click.native="toBuySale(false)" @click.middle.native="toBuySale(true)"></tab-item>
-            <tab-item title="Returns" icon="returns" :active="this.getRoute('Returns')" v-on:click.native="toReturns(false)" @click.middle.native="toReturns(true)"></tab-item>
+            <tab-item title="Store Stock" icon="storestock" :active="this.getRoute('Store Stock')" :route="'/storestock/'" :newable="true" :newRoute="'/storestock/new'" @click.middle.native="toNewTab('/storestock/')"></tab-item>
+            <tab-item title="Big Buys/Sales" icon="buysale" :active="this.getRoute('Buy/Sale')" :route="'/buysale/'" :newable="true" :newRoute="'/buysale/new'" @click.middle.native="toNewTab('/buysale/')"></tab-item>
+            <tab-item title="Returns" icon="returns" :active="this.getRoute('Return')" :route="'/returns/'" :newable="true" :newRoute="'/returns/new'" @click.middle.native="toNewTab('/returns/')"></tab-item>
             <navigation-divider></navigation-divider>
-            <tab-item title="Sign Maker" icon="signmaker" :active="isSignMaker()" v-on:click.native="toSignMaker(false)" @click.middle.native="toSignMaker(true)"></tab-item>
-            <tab-item title="Reports" icon="reports" :active="this.getRoute('Reports')" v-on:click.native="toReports(false)" @click.middle.native="toReports(true)"></tab-item>
+            <tab-item title="Sign Maker" icon="signmaker" :dropdown="true" :items="items"></tab-item>
+            <tab-item title="Reports" icon="reports" :active="this.getRoute('Reports')" v-on:click.native="routeTo('/reports/')" @click.middle.native="toNewTab('/reports/')"></tab-item>
+            <tab-item :blocker="true"></tab-item>
         </ul>
     </div>
 
@@ -23,89 +25,32 @@
             TabItem,
             NavigationDivider
         },
+        data() {
+            return {
+                items: [
+                    {
+                        text: 'New Sign',
+                        route: '/signmaker/',
+                    },
+                    {
+                        text: 'Print Queue',
+                        route: '/signmaker/printqueue/'
+                    },
+                ]
+            }
+        },
         methods: {
+            routeTo(route) {
+                let routeData = this.$router.resolve({path: route});
+                window.open(routeData.href, '_self');
+            },
+            toNewTab(route) {
+                let routeData = this.$router.resolve({path: route});
+                window.open(routeData.href, '_blank');
+            },
             getRoute(val) {
                 if (this.$route.name) {
                     return this.$route.name.includes(val);
-                }
-            },
-            toDashboard(newTab) {
-                if (!newTab) {
-                    this.$router.push({
-                        path: '/dashboard',
-                    })
-                }
-
-                // middle click support
-                else {
-                    let routeData = this.$router.resolve({name: 'Dashboard'});
-                    window.open(routeData.href, '_blank');
-                }
-
-            },
-            toStoreStock(newTab) {
-                if (!newTab) {
-                    this.$router.push({
-                        path: '/storestock',
-                    })
-                }
-
-                // middle click support
-                else {
-                    let routeData = this.$router.resolve({name: 'Store Stock'});
-                    window.open(routeData.href, '_blank');
-                }
-            },
-            toBuySale(newTab) {
-                if (!newTab) {
-                    this.$router.push({
-                        path: '/buysale',
-                    })
-                }
-
-                // middle click support
-                else {
-                    let routeData = this.$router.resolve({name: 'Buy Sale'});
-                    window.open(routeData.href, '_blank');
-                }
-            },
-            toReturns(newTab) {
-                if (!newTab) {
-                    this.$router.push({
-                        path: '/returns',
-                    })
-                }
-
-                // middle click support
-                else {
-                    let routeData = this.$router.resolve({name: 'Returns'});
-                    window.open(routeData.href, '_blank');
-                }
-            },
-            toSignMaker(newTab) {
-                if (!newTab) {
-                    this.$router.push({
-                        path: '/signmaker',
-                    })
-                }
-
-                // middle click support
-                else {
-                    let routeData = this.$router.resolve({name: 'Sign Maker'});
-                    window.open(routeData.href, '_blank');
-                }
-            },
-            toReports(newTab) {
-                if (!newTab) {
-                    this.$router.push({
-                        path: '/reports',
-                    })
-                }
-
-                // middle click support
-                else {
-                    let routeData = this.$router.resolve({name: 'Reports'});
-                    window.open(routeData.href, '_blank');
                 }
             },
             isSignMaker() {
@@ -138,6 +83,7 @@
         margin-bottom: 0;
         padding-left: 0;
         list-style: none;
+        overflow-x: hidden;
     }
 
     .bottom {
