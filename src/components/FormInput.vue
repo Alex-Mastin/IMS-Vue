@@ -12,7 +12,7 @@
                     autocomplete="off"
                     :placeholder="placeholder"
                     v-model="selected"
-                    @changed="parseOption($event.selected)"
+                    @changed="parseOption($event.selected, concatenate)"
                     :options="options"
             >
             </dropdown>
@@ -41,7 +41,7 @@
                     autocomplete="off"
                     :placeholder="placeholderTwo"
                     v-model="inputTwo"
-                    :disabled="disabled"
+                    :disabled="concatenate === false"
             >
             <textarea
                     v-if="textarea === true"
@@ -77,6 +77,11 @@
             placeholder: String,
             placeholderTwo: String,
             elementId: String,
+            concatenate: {
+                type: Boolean,
+                required: false,
+                default: true
+            },
             type: {
                 type: String,
                 required: false,
@@ -127,9 +132,13 @@
             divClass() {
                 return 'input-' + this.inputWidth;
             },
-            parseOption(val) {
+            parseOption(val, concat) {
                 // If input does not contain val, and is just an empty string, make input equal to val.
                 if (!this.inputTwo.includes(val)) if (!this.inputTwo) {
+                    this.inputTwo = val;
+                }
+                // If concatenation is not desired, just replace the value in the second input
+                else if (concat === false) {
                     this.inputTwo = val;
                 }
                 // Else concatenate val to input value

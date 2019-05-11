@@ -77,17 +77,18 @@
                 </div>
                 <div class="user-stats">
                     <div class="user" v-for="user in users">
-                        <a>
+                        <a @click="viewUser(user.firstName, user.lastName)">
                             <div class="user-tile">
                                 <div class="avatar">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="lg"><path d="M405.8 355.3s-79-22.6-87.8-52.8c-8.8-30.2 26.3-86.7 26.3-86.7s52.7-52 17.6-77.8c0 0 35.1-138-105.4-138-141 0-105.7 137.8-105.7 137.8-35.3 25.8 17.6 77.5 17.6 77.5s35.2 56 26.4 86.1c-8.8 30.2-88.1 53.9-88.1 53.9C-16.8 363.9.9 512.5.9 512.5h510.3c-.1 0 17.5-148.6-105.4-157.2z"></path></svg>
+                                    <span class="inactive" v-if="user.active === false">×</span>
                                 </div>
                             </div>
                         </a>
                         <span class="user-name text-draft">{{ user.firstName }} {{ user.lastName }}</span>
                     </div>
                     <div class="user">
-                        <a>
+                        <a @click="routeTo('/technicians/new')">
                             <div class="user-tile">
                                 <div class="avatar">
                                     <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 42 42" class="lg" xml:space="preserve"><polygon points="42,20 22,20 22,0 20,0 20,20 0,20 0,22 20,22 20,42 22,42 22,22 42,22"></polygon></svg>
@@ -95,6 +96,16 @@
                             </div>
                         </a>
                         <span class="user-name text-draft">New Technician</span>
+                    </div>
+                    <div class="user">
+                        <a @click="routeTo('/technicians/edit')">
+                            <div class="user-tile">
+                                <div class="avatar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 55.25 55.25" class="lg" xml:space="preserve"><path d="M52.618,2.631c-3.51-3.508-9.219-3.508-12.729,0L3.827,38.693C3.81,38.71,3.8,38.731,3.785,38.749 c-0.021,0.024-0.039,0.05-0.058,0.076c-0.053,0.074-0.094,0.153-0.125,0.239c-0.009,0.026-0.022,0.049-0.029,0.075 c-0.003,0.01-0.009,0.02-0.012,0.03l-3.535,14.85c-0.016,0.067-0.02,0.135-0.022,0.202C0.004,54.234,0,54.246,0,54.259 c0.001,0.114,0.026,0.225,0.065,0.332c0.009,0.025,0.019,0.047,0.03,0.071c0.049,0.107,0.11,0.21,0.196,0.296 c0.095,0.095,0.207,0.168,0.328,0.218c0.121,0.05,0.25,0.075,0.379,0.075c0.077,0,0.155-0.009,0.231-0.027l14.85-3.535 c0.027-0.006,0.051-0.021,0.077-0.03c0.034-0.011,0.066-0.024,0.099-0.039c0.072-0.033,0.139-0.074,0.201-0.123 c0.024-0.019,0.049-0.033,0.072-0.054c0.008-0.008,0.018-0.012,0.026-0.02l36.063-36.063C56.127,11.85,56.127,6.14,52.618,2.631z M51.204,4.045c2.488,2.489,2.7,6.397,0.65,9.137l-9.787-9.787C44.808,1.345,48.716,1.557,51.204,4.045z M46.254,18.895l-9.9-9.9 l1.414-1.414l9.9,9.9L46.254,18.895z M4.961,50.288c-0.391-0.391-1.023-0.391-1.414,0L2.79,51.045l2.554-10.728l4.422-0.491 l-0.569,5.122c-0.004,0.038,0.01,0.073,0.01,0.11c0,0.038-0.014,0.072-0.01,0.11c0.004,0.033,0.021,0.06,0.028,0.092 c0.012,0.058,0.029,0.111,0.05,0.165c0.026,0.065,0.057,0.124,0.095,0.181c0.031,0.046,0.062,0.087,0.1,0.127 c0.048,0.051,0.1,0.094,0.157,0.134c0.045,0.031,0.088,0.06,0.138,0.084C9.831,45.982,9.9,46,9.972,46.017 c0.038,0.009,0.069,0.03,0.108,0.035c0.036,0.004,0.072,0.006,0.109,0.006c0,0,0.001,0,0.001,0c0,0,0.001,0,0.001,0h0.001 c0,0,0.001,0,0.001,0c0.036,0,0.073-0.002,0.109-0.006l5.122-0.569l-0.491,4.422L4.204,52.459l0.757-0.757 C5.351,51.312,5.351,50.679,4.961,50.288z M17.511,44.809L39.889,22.43c0.391-0.391,0.391-1.023,0-1.414s-1.023-0.391-1.414,0 L16.097,43.395l-4.773,0.53l0.53-4.773l22.38-22.378c0.391-0.391,0.391-1.023,0-1.414s-1.023-0.391-1.414,0L10.44,37.738 l-3.183,0.354L34.94,10.409l9.9,9.9L17.157,47.992L17.511,44.809z M49.082,16.067l-9.9-9.9l1.415-1.415l9.9,9.9L49.082,16.067z"/></svg>
+                                </div>
+                            </div>
+                        </a>
+                        <span class="user-name text-draft">Edit Technician</span>
                     </div>
                     <div class="width-100">
                         <div class="productivity">
@@ -145,10 +156,13 @@
                 units: [],
                 currentSort: 'time',
                 sortDirection: 'desc',
-                users: [{firstName: 'Alex', lastName: 'Mastin'}, {firstName: 'Seth', lastName: 'Uscensky'}, {firstName: 'Cole', lastName: 'Nelson'}, {firstName: 'Jake', lastName: 'Poets'}, {firstName: 'Logan', lastName: 'Roufs'}, {firstName: 'Thomas', lastName: 'Harris'}]
+                users: []
             }
         },
         methods: {
+            viewUser(firstName, lastName) {
+                this.routeTo("/user/?fneq=" + firstName + "&lneq=" + lastName);
+            },
             viewUnit(type, sku) {
                 if (type === "Store Stock") {
                     this.routeTo("/storestock/edit/" + sku);
@@ -292,6 +306,22 @@
             // });
 
 
+            database.collection("technicians").orderBy("firstName", "asc").onSnapshot(snapshot => {
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        let doc = change.doc.data();
+                        doc.id = change.doc.id;
+
+                        this.users.push(doc)
+                    }
+                    else if (change.type === 'removed'){
+                        let doc = change.doc.data();
+                        doc.id = change.doc.id;
+
+                        this.users = this.users.filter(e => e!== doc)
+                    }
+                })
+            })
 
             // ******************
             // Total Store Stocks
@@ -425,6 +455,10 @@
     .nav-tabs li {
         float: left;
         margin-top: -44px;
+    }
+
+    .nav li a {
+        padding: 10px 15px;
     }
 
     .nav li, .nav li a {
@@ -590,6 +624,14 @@
         fill: #e0e0e0;
     }
 
+    .inactive {
+        font-size: 48px;
+        position: relative;
+        left: 50px;
+        top: -40px;
+        color: #a0a0a0;
+    }
+
     .panel-heading {
         padding: 10px 0 5px;
         border-bottom: 1px solid #eee;
@@ -693,6 +735,10 @@
 
     .user-tile:hover svg {
         fill: #d9d9d9;
+    }
+
+    .user-tile:hover .inactive {
+        color: #919191;
     }
 
     .user-name {

@@ -150,9 +150,19 @@ export default new Router({
             component: () => import('./views/User.vue')
         },
         {
-            path: '/technicians/',
+            path: '/technicians',
             name: 'Technicians',
             component: () => import('./views/Technicians.vue')
+        },
+        {
+            path: '/technicians/edit',
+            name: 'Edit Technician',
+            component: () => import('./views/EditTechnician.vue')
+        },
+        {
+            path: '/technicians/new',
+            name: 'New Technician',
+            component: () => import('./views/NewTechnician.vue')
         },
         {
             path: "*",

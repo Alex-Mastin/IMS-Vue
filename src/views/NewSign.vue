@@ -290,7 +290,7 @@
 
             let query = this.getQuery();
 
-            if (query.manufacturer && query.model && query.carrier && query.capacity && query.sku) {
+            if (query.manufacturer && query.model && query.sku) {
                 document.getElementById("manufacturer").value = query.manufacturer;
                 document.getElementById("model").value = query.model;
                 document.getElementById("carrier").value = query.carrier;

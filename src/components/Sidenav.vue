@@ -2,7 +2,7 @@
     <div id="sidebar-container">
         <ul class="nav" id="sidebar">
             <tab-item title="Dashboard" icon="dashboard" :active="this.getRoute('Dashboard')" :route="'/dashboard/'" @click.middle.native="toNewTab('/dashboard/')"></tab-item>
-            <tab-item v-show='false' title="Technicians" icon="technicians" :active="this.getRoute('Technician')" :route="'/technicians/'" @click.middle.native="toNewTab('/technicians/')"></tab-item>
+            <tab-item title="Technicians" icon="technicians" :active="this.getRoute('Technician')" :route="'/technicians/'" @click.middle.native="toNewTab('/technicians/')"></tab-item>
             <navigation-divider></navigation-divider>
             <tab-item title="Store Stock" icon="storestock" :active="this.getRoute('Store Stock')" :route="'/storestock/'" :newable="true" :newRoute="'/storestock/new'" @click.middle.native="toNewTab('/storestock/')"></tab-item>
             <tab-item title="Big Buys/Sales" icon="buysale" :active="this.getRoute('Buy/Sale')" :route="'/buysale/'" :newable="true" :newRoute="'/buysale/new'" @click.middle.native="toNewTab('/buysale/')"></tab-item>

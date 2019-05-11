@@ -182,7 +182,7 @@
                                     database.collection('devices').doc(sku).update(update)
                                         .then(() => {
                                             console.log("Document written with ID: ", sku);
-                                            if (validModels.includes(product.manufacturer.split(" ")[0])) {
+                                            if (validModels.includes(product.model.split(" ")[0])) {
                                                 // Make sign for device?
                                                 this.showConfirm();
                                             }
@@ -206,9 +206,10 @@
                                     .then(() => {
                                         console.log("Document written with ID: ", sku);
 
-                                        if (validModels.includes(product.manufacturer.split(" ")[0])) {
+                                        if (validModels.includes(product.model.split(" ")[0])) {
                                             // Make sign for device?
                                             this.showConfirm();
+                                            console.log(true)
                                         }
                                         else {
                                             this.routeTo('/storestock');

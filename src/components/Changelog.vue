@@ -85,6 +85,9 @@
                         text: 'Corrected hover behavior of Inventory Summary panel text.'
                     },
                     {
+                        text: 'Enabled functionality to create signs for specific new Store Stock devices.'
+                    },
+                    {
                         text: 'Fixed a bug where certain Store Stock entries would not redirect back to the Store Stock Tracker.'
                     },
                     {

@@ -153,6 +153,16 @@ export default new Router({
             component: () => import('./views/Technicians.vue')
         },
         {
+            path: '/technicians/edit',
+            name: 'Edit Technician',
+            component: () => import('./views/EditTechnician.vue')
+        },
+        {
+            path: '/technicians/new',
+            name: 'New Technician',
+            component: () => import('./views/NewTechnician.vue')
+        },
+        {
             path: "*",
             name: "Page Not Found",
             component: () => import('./views/PageNotFound.vue')

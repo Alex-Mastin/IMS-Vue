@@ -125,7 +125,7 @@
                     this.model = this.formatModel(document.getElementById("model").value, document.getElementById("identifier").value);
                     this.cpu = document.getElementById("cpu").value;
                     this.ram = document.getElementById("memory").value;
-                    this.capacity = document.getElementById("capacity").value;
+                    this.capacity = document.getElementById("capacity").value + " " + document.getElementById("drive").value;
                     this.drive = document.getElementById("drive").value;
                     this.price = document.getElementById("price").value;
                     this.msrp = document.getElementById("msrp").value;
@@ -218,6 +218,8 @@
                         msrp = signMsrp.value;
                         msrp = msrp.replace("$", "");
                     }
+
+                    console.log(capacity);
 
                     // Add sign to database
                     database.collection("largesigns").add({

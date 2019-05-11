@@ -7,7 +7,7 @@
                     :manufacturer="sign.manufacturer"
                     :model="sign.model"
                     :cpu="sign.cpu"
-                    :memory="sign.ram"
+                    :memory="formatMemory(sign.ram)"
                     :capacity="sign.capacity"
                     :drive="getDrive(sign.capacity)"
                     :msrp=Number(sign.msrp)
@@ -35,6 +35,9 @@
             Modal
         },
         methods: {
+            formatMemory(memory) {
+                return memory.replace("RAM", "");
+            },
             getDrive(drive) {
                 if (drive.includes("HDD")) {
                     return "HDD";
@@ -107,8 +110,6 @@
                             sku: doc.sku,
                             msrp: doc.msrp,
                         };
-
-                        console.log(doc.capacity);
 
                         this.largeSigns.push(sign);
                     }
